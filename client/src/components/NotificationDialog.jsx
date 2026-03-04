@@ -75,6 +75,13 @@ const Hr = styled.hr`
   margin-top: 4px;
 `;
 
+const EmptyMessage = styled.div`
+  text-align: center;
+  margin-top: 20px;
+  color: ${({ theme }) => theme.textSoft};
+  opacity: 0.7;
+`;
+
 const NotificationDialog = ({
   open,
   id,
@@ -121,9 +128,9 @@ const NotificationDialog = ({
         ))}
 
         {(!notification || notification.length === 0) && (
-          <div style={{ textAlign: "center", marginTop: "20px", color: "inherit", opacity: 0.7 }}>
+          <EmptyMessage>
             No new notifications
-          </div>
+          </EmptyMessage>
         )}
 
       </Wrapper>

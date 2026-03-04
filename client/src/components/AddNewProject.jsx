@@ -47,14 +47,14 @@ const Container = styled.div`
 const Wrapper = styled.div`
   width: 100%;
   height: min-content;
-  max-height: 96%;
+  max-height: 90vh;
   overflow-y: auto;
-  margin: 2%;
+  margin: 2% auto;
   max-width: 600px;
   border-radius: 16px;
   background-color: ${({ theme }) => theme.bgLighter};
   color: ${({ theme }) => theme.text};
-  padding: 10px;
+  padding: 10px 10px 20px 10px;
   display: flex;
   flex-direction: column;
   position: relative;

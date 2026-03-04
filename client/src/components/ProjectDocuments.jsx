@@ -12,7 +12,8 @@ import {
 import { Modal, IconButton, CircularProgress } from '@mui/material';
 import { openSnackbar } from '../redux/snackbarSlice';
 import { addProjectDocument, deleteProjectDocument } from '../api';
-
+import { storage } from '../firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 const Container = styled.div`
   padding: 20px 0px;
 `;
@@ -257,6 +258,9 @@ const ProjectDocuments = ({ project, setProject }) => {
     link: ''
   });
 
+  const [file, setFile] = useState(null);
+  const [uploadPercent, setUploadPercent] = useState(0);
+
   const { currentUser } = useSelector((state) => state.user);
 
   const currentUserAccess = project?.members?.find(
@@ -269,6 +273,7 @@ const ProjectDocuments = ({ project, setProject }) => {
   const getFormatIcon = (format) => {
     switch (format) {
       case 'PDF': return <PictureAsPdf />;
+      case 'File Upload': return <InsertDriveFile />;
       case 'Google Doc': return <Description />;
       case 'PPT': return <InsertDriveFile />;
       default: return <LinkIcon />;
@@ -277,26 +282,64 @@ const ProjectDocuments = ({ project, setProject }) => {
 
   const handleAdd = async (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.link) {
-      dispatch(openSnackbar({ message: "Name and Link are required.", type: "error" }));
+    if (!formData.name) {
+      dispatch(openSnackbar({ message: "Name is required.", type: "error" }));
+      return;
+    }
+
+    if (formData.format === 'File Upload' && !file) {
+      dispatch(openSnackbar({ message: "Please select a file to upload.", type: "error" }));
+      return;
+    }
+
+    if (formData.format !== 'File Upload' && !formData.link) {
+      dispatch(openSnackbar({ message: "Link is required.", type: "error" }));
       return;
     }
 
     setLoading(true);
-    try {
-      const token = localStorage.getItem("token");
-      const res = await addProjectDocument(project._id, formData, token);
-      setProject(res.data.project);
-      dispatch(openSnackbar({ message: "Document added successfully!", type: "success" }));
-      setOpenModal(false);
-      setFormData({ name: '', format: 'Link', link: '' });
-    } catch (err) {
-      dispatch(openSnackbar({
-        message: err.response?.data?.message || err.message,
-        type: "error"
-      }));
-    } finally {
-      setLoading(false);
+
+    if (formData.format === 'File Upload' && file) {
+      const fileName = new Date().getTime() + "-" + file.name;
+      const storageRef = ref(storage, fileName);
+
+      try {
+        setUploadPercent(50); // Just a generic progress indicator for now
+        await uploadBytes(storageRef, file);
+        const downloadURL = await getDownloadURL(storageRef);
+
+        const documentData = { ...formData, link: downloadURL };
+        const token = localStorage.getItem("token");
+        const res = await addProjectDocument(project._id, documentData, token);
+
+        setProject(res.data.project);
+        dispatch(openSnackbar({ message: "Document added successfully!", type: "success" }));
+        setOpenModal(false);
+        setFormData({ name: '', format: 'Link', link: '' });
+        setFile(null);
+        setUploadPercent(0);
+      } catch (error) {
+        console.error("Firebase Details:", error);
+        dispatch(openSnackbar({ message: 'Upload Failed: ' + (error.message || error.code || 'Unknown Error'), type: "error" }));
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await addProjectDocument(project._id, formData, token);
+        setProject(res.data.project);
+        dispatch(openSnackbar({ message: "Document added successfully!", type: "success" }));
+        setOpenModal(false);
+        setFormData({ name: '', format: 'Link', link: '' });
+      } catch (err) {
+        dispatch(openSnackbar({
+          message: err.response?.data?.message || err.message,
+          type: "error"
+        }));
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -387,22 +430,39 @@ const ProjectDocuments = ({ project, setProject }) => {
                 onChange={(e) => setFormData({ ...formData, format: e.target.value })}
               >
                 <option value="Link">External Link</option>
+                <option value="File Upload">File Upload (PDF, Doc, etc.)</option>
                 <option value="Google Doc">Google Doc / Sheet</option>
-                <option value="PDF">Google Drive PDF</option>
+                <option value="PDF">External PDF Link</option>
                 <option value="PPT">Presentation (PPT)</option>
               </Select>
             </FormGroup>
 
-            <FormGroup>
-              <Label>URL Link</Label>
-              <Input
-                placeholder="https://..."
-                type="url"
-                value={formData.link}
-                onChange={(e) => setFormData({ ...formData, link: e.target.value })}
-                required
-              />
-            </FormGroup>
+            {formData.format === 'File Upload' ? (
+              <FormGroup>
+                <Label>Choose File</Label>
+                <Input
+                  type="file"
+                  onChange={(e) => setFile(e.target.files[0])}
+                  required
+                />
+                {uploadPercent > 0 && uploadPercent < 100 && (
+                  <div style={{ marginTop: '8px', fontSize: '12px', color: '#888' }}>
+                    Uploading: {uploadPercent}%
+                  </div>
+                )}
+              </FormGroup>
+            ) : (
+              <FormGroup>
+                <Label>URL Link</Label>
+                <Input
+                  placeholder="https://..."
+                  type="url"
+                  value={formData.link}
+                  onChange={(e) => setFormData({ ...formData, link: e.target.value })}
+                  required
+                />
+              </FormGroup>
+            )}
 
             <ModalActions>
               <SubmitButton

@@ -46,12 +46,14 @@ const Container = styled.div`
 const Wrapper = styled.div`
   width: 100%;
   height: min-content;
-  margin: 2%;
+  max-height: 90vh;
+  overflow-y: auto;
+  margin: 2% auto;
   max-width: 600px;
   border-radius: 16px;
   background-color: ${({ theme }) => theme.bgLighter};
   color: ${({ theme }) => theme.text};
-  padding: 10px;
+  padding: 10px 10px 20px 10px;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -71,8 +73,11 @@ const Desc = styled.textarea`
   border-radius: 3px;
   background-color: transparent;
   outline: none;
-  padding: 10px 0px;
+  padding: 0;
+  margin: 0;
   color: ${({ theme }) => theme.textSoft};
+  resize: none;
+  font-family: inherit;
 `;
 
 const Label = styled.div`
@@ -569,7 +574,7 @@ const UpdateProject = ({ openUpdate, setOpenUpdate }) => {
                                     onChange={handleChange}
                                 />
                             </OutlinedBox>
-                            <OutlinedBox style={{ marginTop: "6px" }}>
+                            <OutlinedBox style={{ marginTop: "6px", alignItems: "flex-start", padding: "12px 14px" }}>
                                 <Desc
                                     placeholder="Description (Required)* "
                                     name="desc"
@@ -578,7 +583,7 @@ const UpdateProject = ({ openUpdate, setOpenUpdate }) => {
                                     onChange={handleChange}
                                 />
                             </OutlinedBox>
-                            <OutlinedBox style={{ marginTop: "6px" }}>
+                            <OutlinedBox style={{ marginTop: "6px", alignItems: "flex-start", padding: "12px 14px" }}>
                                 <Desc
                                     placeholder="Tags: seperate by , eg- Mongo Db , React JS .."
                                     name="tags"

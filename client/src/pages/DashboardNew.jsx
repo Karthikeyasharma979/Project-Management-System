@@ -317,8 +317,7 @@ const DashboardNew = ({ setNewProject, setNewTeam }) => {
 
         const projectTasks = data.tasks.filter(t => t.projectId === projectId);
         if (projectTasks.length === 0) {
-            if (status === "In Progress") return 60;
-            return 30; // Default/Start
+            return 0;
         }
 
         const completedCount = projectTasks.filter(t => t.status === "Completed" || t.status === "Done").length;
@@ -440,14 +439,7 @@ const DashboardNew = ({ setNewProject, setNewTeam }) => {
                                         </p>
                                     </div>
 
-                                    {/* Visual Progress Bar */}
-                                    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: theme.textSoft }}>
-                                            <span>Progress</span>
-                                            <span>{getProgress(project._id, project.status)}%</span>
-                                        </div>
-                                        <PremiumProgress value={getProgress(project._id, project.status)} />
-                                    </div>
+
 
                                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: "10px", borderTop: `1px solid ${theme.soft}` }}>
                                         <MemberGroup>

@@ -51,9 +51,21 @@ const Container = styled.div`
   }
 `;
 const ContainerWrapper = styled.div`
-  height: 90%;
-  overflow-y: scroll !important;
+  height: calc(100vh - 80px);
+  overflow-y: auto;
   margin-top: 0px;
+  
+  /* Custom Scrollbar for Menu */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: ${({ theme }) => theme.soft};
+    border-radius: 3px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
 `;
 const Space = styled.div`
   height: 50px;

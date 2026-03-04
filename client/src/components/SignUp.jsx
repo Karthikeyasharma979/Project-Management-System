@@ -417,13 +417,14 @@ const SignUp = ({ setSignUpOpen, setSignInOpen }) => {
                     color: gender === "" ? theme.soft2 : theme.textSoft,
                   }}
                   onChange={(e) => setGender(e.target.value)}
+                  value={gender}
                 >
-                  <option value="" disabled selected hidden>
+                  <option style={{ backgroundColor: theme.bgLighter, color: theme.soft2 }} value="" disabled hidden>
                     Select Gender
                   </option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
+                  <option style={{ backgroundColor: theme.bgLighter, color: theme.textSoft }} value="Male">Male</option>
+                  <option style={{ backgroundColor: theme.bgLighter, color: theme.textSoft }} value="Female">Female</option>
+                  <option style={{ backgroundColor: theme.bgLighter, color: theme.textSoft }} value="Other">Other</option>
                 </select>
               </OutlinedBox>
               <OutlinedBox>
