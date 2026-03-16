@@ -30,6 +30,8 @@ import AddNewTeam from './components/AddNewTeam';
 import { useEffect } from 'react';
 import { getUsers } from './api';
 import Home from './pages/Home/Home';
+import LiveNotifications from './components/LiveNotifications';
+import { io } from 'socket.io-client';
 
 const Container = styled.div`
   height: 100vh;
@@ -54,6 +56,16 @@ function AppContent({ darkMode, setDarkMode }) {
   const { open, message, severity } = useSelector((state) => state.snackbar);
   const [loading, setLoading] = useState(false);
   const { currentUser } = useSelector(state => state.user);
+  const [globalSocket, setGlobalSocket] = useState(null);
+
+  // Global socket for live notifications
+  useEffect(() => {
+    if (!currentUser) return;
+    const socket = io('http://localhost:8700', { transports: ['websocket'] });
+    socket.emit('add-user', currentUser._id);
+    setGlobalSocket(socket);
+    return () => socket.disconnect();
+  }, [currentUser]);
 
   useEffect(() => {
     const resize = () => {
@@ -93,6 +105,7 @@ function AppContent({ darkMode, setDarkMode }) {
         </Main>
       </>}
       {open && <ToastMessage open={open} message={message} severity={severity} />}
+      <LiveNotifications socket={globalSocket} />
     </Container>
   ) : (
     <ThemeProvider theme={darkTheme}>

@@ -9,6 +9,7 @@ import { addWorks } from "../api";
 import CircularProgress from "@mui/material/CircularProgress";
 import { useDispatch } from "react-redux";
 import { openSnackbar } from "../redux/snackbarSlice";
+import AITaskAssistant from "./AITaskAssistant";
 
 const Container = styled.div`
   padding: 12px 14px;
@@ -389,6 +390,14 @@ const AddWork = ({ ProjectMembers, ProjectId, setCreated, closeForm }) => {
         <>
           <Top>
             <Title>Create Task</Title>
+            <AITaskAssistant
+              taskTitle={title}
+              projectId={ProjectId}
+              onApply={(result) => {
+                if (result.description) setDesc(result.description);
+                if (result.tags?.length > 0) setTags(result.tags.join(", "));
+              }}
+            />
           </Top>
           <OutlinedBox style={{ marginTop: "8px" }}>
             <TextInput

@@ -12,6 +12,7 @@ import messageRoutes from './routes/message.js';
 import organizationRoutes from './routes/organization.js'; // Added
 import roleRoutes from './routes/role.js';
 import zoomRoutes from './routes/zoom.js';
+import aiRoutes from './routes/ai.js';
 import cookieParser from "cookie-parser";
 import cors from 'cors';
 import morgan from 'morgan';
@@ -49,6 +50,8 @@ const onlineUsers = new Map();
 io.on("connection", (socket) => {
     socket.on("add-user", (userId) => {
         onlineUsers.set(userId, socket.id);
+        // Broadcast online status to all clients
+        io.emit("user-online", userId);
     });
 
     socket.on("join-chat", (room) => {
@@ -59,10 +62,15 @@ io.on("connection", (socket) => {
         socket.to(data.chatId).emit("msg-recieve", data);
     });
 
+    // Real-time task notification: server pushes to specific user
+    // Controllers call: io.to(socketId).emit("task-notification", payload)
+    // No handler needed here — emitting is done from controllers via app.get("io")
+
     socket.on("disconnect", () => {
         for (const [userId, socketId] of onlineUsers.entries()) {
             if (socketId === socket.id) {
                 onlineUsers.delete(userId);
+                io.emit("user-offline", userId);
                 break;
             }
         }
@@ -94,6 +102,7 @@ app.use("/api/message", messageRoutes);
 app.use("/api/organization", organizationRoutes); // Added
 app.use("/api/roles", roleRoutes);
 app.use("/api/zoom", zoomRoutes);
+app.use("/api/ai", aiRoutes);
 
 app.use((err, req, res, next) => {
     fs.appendFileSync('error.log', new Date().toISOString() + ' - ' + (err.stack || err.message || err.toString()) + '\n');

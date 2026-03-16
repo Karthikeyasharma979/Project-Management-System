@@ -120,3 +120,9 @@ export const findChat = async (firstId, secondId, token) => await API.get(`/chat
 export const getProjectChat = async (projectId, token) => await API.get(`/chat/project/${projectId}`, { headers: { "Authorization": `Bearer ${token}` } }, { withCredentials: true });
 export const addMessage = async (data, token) => await API.post('/message/', data, { headers: { "Authorization": `Bearer ${token}` } }, { withCredentials: true });
 export const getMessages = async (chatId, token) => await API.get(`/message/${chatId}`, { headers: { "Authorization": `Bearer ${token}` } }, { withCredentials: true });
+
+// AI Features
+export const aiGenerateTask = async (taskTitle, projectId, token) => await API.post('/ai/task-assistant', { taskTitle, projectId }, { headers: { "Authorization": `Bearer ${token}` } });
+export const aiSprintPlanner = async (projectId, token) => await API.post('/ai/sprint-planner', { projectId }, { headers: { "Authorization": `Bearer ${token}` } });
+export const getProjectAnalytics = async (projectId, token) => await API.get(`/ai/analytics/${projectId}`, { headers: { "Authorization": `Bearer ${token}` } });
+

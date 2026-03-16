@@ -41,6 +41,7 @@ import ProjectTimeline from "../components/ProjectTimeline";
 import GitHubFeed from "../components/GitHubFeed";
 import { tagColors } from "../data/data";
 import ProjectDocuments from "../components/ProjectDocuments";
+import ProjectAnalytics from "../components/ProjectAnalytics";
 import { io } from "socket.io-client";
 
 // --- Animations ---
@@ -584,6 +585,9 @@ const ProjectDetails = () => {
           <ViewTab active={activeView === 'documents'} onClick={() => setActiveView('documents')}>
             <DonutLarge sx={{ fontSize: 16 }} /> Documents
           </ViewTab>
+          <ViewTab active={activeView === 'analytics'} onClick={() => setActiveView('analytics')} style={{ background: activeView === 'analytics' ? 'linear-gradient(135deg, #854CE6, #6c3bbf)' : '' }}>
+            <BarChart sx={{ fontSize: 16 }} /> Analytics
+          </ViewTab>
         </ViewTabs>
       </div>
 
@@ -603,6 +607,8 @@ const ProjectDetails = () => {
         <GitHubFeed projectId={id} githubRepo={item.githubRepo} />
       ) : activeView === 'documents' ? (
         <ProjectDocuments project={item} setProject={setItems} />
+      ) : activeView === 'analytics' ? (
+        <ProjectAnalytics projectId={id} />
       ) : (
         <MainContent>
           <KanbanBoard>

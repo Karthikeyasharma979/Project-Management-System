@@ -511,6 +511,23 @@ export const addWork = async (req, res, next) => {
         const savedNote = await newNotification.save();
         await User.findByIdAndUpdate(memberId, { $push: { notifications: savedNote._id } });
 
+        // 🔔 Real-time Socket.IO Push Notification
+        const io = req.app.get("io");
+        const onlineUsers = req.app.get("onlineUsers");
+        const memberSocketId = onlineUsers?.get(memberId.toString());
+        if (io && memberSocketId) {
+          io.to(memberSocketId).emit("task-notification", {
+            type: "task_assigned",
+            message: `${user.name} assigned you to "${taskData[k].task}"`,
+            projectId: project._id,
+            projectTitle: project.title,
+            taskName: taskData[k].task,
+            workTitle: savedWork.title,
+            assignedBy: { name: user.name, img: user.img },
+            timestamp: new Date()
+          });
+        }
+
         // Send Email Notification
         const member = await User.findById(memberId);
         if (member) {
@@ -770,6 +787,35 @@ export const addNewTask = async (req, res, next) => {
     if (memberIds.length > 0) {
       const memberUsers = await User.find({ _id: { $in: memberIds } });
       const creator = await User.findById(req.user.id); // Current user who added the task
+
+      // 🔔 Real-time Socket.IO Push Notification for each member
+      const io = req.app.get("io");
+      const onlineUsers = req.app.get("onlineUsers");
+
+      // Create notifications in DB and push live
+      for (const member of memberUsers) {
+        const newNotification = new Notifications({
+          link: work.projectId,
+          type: "task",
+          message: `"${creator.name}" assigned you to task "${newTask.task}" in project "${project.title.toUpperCase()}".`,
+        });
+        const savedNote = await newNotification.save();
+        await User.findByIdAndUpdate(member._id, { $push: { notifications: savedNote._id } });
+
+        const memberSocketId = onlineUsers?.get(member._id.toString());
+        if (io && memberSocketId) {
+          io.to(memberSocketId).emit("task-notification", {
+            type: "task_assigned",
+            message: `${creator.name} assigned you to "${newTask.task}"`,
+            projectId: project._id,
+            projectTitle: project.title,
+            taskName: newTask.task,
+            workTitle: work.title,
+            assignedBy: { name: creator.name, img: creator.img },
+            timestamp: new Date()
+          });
+        }
+      }
 
       memberUsers.forEach(member => {
         const mailOptions = {
