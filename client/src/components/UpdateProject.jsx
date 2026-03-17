@@ -28,7 +28,6 @@ import {
 } from "../api/index";
 import { openSnackbar } from "../redux/snackbarSlice";
 import { useDispatch } from "react-redux";
-import ImageSelector from "./ImageSelector";
 
 
 
@@ -568,7 +567,6 @@ const UpdateProject = ({ openUpdate, setOpenUpdate }) => {
                     {showAddProject && (
                         <>
                             <Label>Project Details :</Label>
-                            <ImageSelector inputs={inputs} setInputs={setInputs} style={{ marginTop: "12px" }} />
                             <OutlinedBox style={{ marginTop: "12px" }}>
                                 <TextInput
                                     placeholder="Title (Required)*"

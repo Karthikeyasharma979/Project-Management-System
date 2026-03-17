@@ -78,7 +78,7 @@ export const getProjectAnalytics = async (req, res, next) => {
     try {
         const { projectId } = req.params;
 
-        const project = await Project.findById(projectId);
+        const project = await Project.findById(projectId).populate("members.id", "name img email");
         if (!project) return next(createError(404, "Project not found."));
 
         const isMember = project.members.some(m =>

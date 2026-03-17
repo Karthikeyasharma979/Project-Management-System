@@ -26,7 +26,6 @@ import {
 import { openSnackbar } from "../redux/snackbarSlice";
 import { useDispatch } from "react-redux";
 import { updateUser } from "../redux/userSlice";
-import ImageSelector from "./ImageSelector";
 
 const Container = styled.div`
   width: 100%;
@@ -491,7 +490,6 @@ const AddNewTeam = ({ setNewTeam }) => {
           {showAddTeam && (
             <>
               <Label>Team Details :</Label>
-              <ImageSelector inputs={inputs} setInputs={setInputs} style={{ marginTop: "12px" }} />
               <OutlinedBox style={{ marginTop: "12px" }}>
                 <TextInput
                   placeholder="Team Name (Required)*"

@@ -100,3 +100,17 @@ export const deletePost = async (req, res, next) => {
         next(err);
     }
 };
+
+export const updatePost = async (req, res, next) => {
+    try {
+        const post = await Post.findById(req.params.id);
+        if (post.userId === req.user.id) {
+            await post.updateOne({ $set: req.body });
+            res.status(200).json("The post has been updated");
+        } else {
+            return next(createError(403, "You can update only your post!"));
+        }
+    } catch (err) {
+        next(err);
+    }
+};

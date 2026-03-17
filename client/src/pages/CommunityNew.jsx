@@ -1,257 +1,198 @@
 import React, { useState, useEffect } from "react";
 import styled, { keyframes, useTheme } from "styled-components";
-import { Avatar, IconButton, Chip } from "@mui/material";
-import { Favorite, FavoriteBorder, ChatBubbleOutline, Share, MoreHoriz, Search, Send } from "@mui/icons-material";
-import { GalaxyButton, MagicCard, PremiumLoader } from "../components/CreativeComponents";
+import { Avatar, IconButton, Menu, MenuItem, ListItemIcon, ListItemText } from "@mui/material";
+import {
+  Favorite, FavoriteBorder, ChatBubbleOutline, Share, MoreHoriz, DeleteOutline, Edit,
+  Send, TrendingUp, People, Public, AutoAwesome, Image, Link
+} from "@mui/icons-material";
+import { GalaxyButton, PremiumLoader, GlassCard } from "../components/CreativeComponents";
 import { useDispatch, useSelector } from "react-redux";
 import { openSnackbar } from "../redux/snackbarSlice";
-import { getPosts, createPost, likePost, addComment, getComments } from "../api";
+import { getPosts, createPost, likePost, addComment, getComments, deletePost, updatePost } from "../api";
 import { format } from "timeago.js";
 
-// --- Animations ---
+// ─── Animations ────────────────────────────────────────────────────────────────
+
 const fadeInUp = keyframes`
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(16px); }
   to { opacity: 1; transform: translateY(0); }
 `;
 
 const float = keyframes`
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
 `;
 
-// --- Styled Components ---
+const heartBeat = keyframes`
+  0%, 100% { transform: scale(1); }
+  25% { transform: scale(1.2); }
+  75% { transform: scale(0.95); }
+`;
+
+// ─── Layout ────────────────────────────────────────────────────────────────────
 
 const Container = styled.div`
-  padding: 30px;
-  background-color: ${({ theme }) => theme.bg};
-  height: 100%;
-  overflow-y: scroll;
-  /* Premium Radial Gradient Background */
-  background: 
-    radial-gradient(circle at 10% 20%, ${({ theme }) => theme.bgLighter} 0%, transparent 20%),
-    radial-gradient(circle at 90% 80%, ${({ theme }) => theme.primary + "15"} 0%, transparent 20%),
-    radial-gradient(${({ theme }) => theme.textSoft + "10"} 1px, transparent 1px);
-  background-size: 100% 100%, 100% 100%, 30px 30px;
-  background-attachment: local;
+  padding: 28px 32px;
+  background: ${({ theme }) => theme.bg};
+  min-height: 100%;
 `;
 
-const ContentWrapper = styled.div`
+const ContentGrid = styled.div`
   max-width: 1200px;
-  margin: 0 auto;
   display: grid;
-  grid-template-columns: 1fr 350px;
-  gap: 30px;
+  grid-template-columns: 1fr 320px;
+  gap: 28px;
+  align-items: start;
 
-  @media (max-width: 900px) {
+  @media (max-width: 960px) {
     grid-template-columns: 1fr;
   }
 `;
 
-const MainFeed = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+// ─── Header ────────────────────────────────────────────────────────────────────
+
+const PageHeader = styled.div`
+  margin-bottom: 28px;
+  animation: ${fadeInUp} 0.4s ease-out;
 `;
 
-const Sidebar = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  position: sticky;
-  top: 0;
-  height: fit-content;
-  animation: ${fadeInUp} 0.8s ease-out;
-
-  @media (max-width: 900px) {
-    display: none;
-  }
-`;
-
-// --- Header Section ---
-
-const Header = styled.div`
-  margin-bottom: 30px;
-  animation: ${fadeInUp} 0.6s ease-out;
-`;
-
-const Title = styled.h1`
-  font-size: 34px;
-  font-weight: 800;
-  background: linear-gradient(to right, ${({ theme }) => theme.text}, ${({ theme }) => theme.primary});
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+const TitleRow = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 8px;
+  gap: 14px;
+  margin-bottom: 6px;
+`;
 
-  &::before {
-    content: "🚀";
-    -webkit-text-fill-color: initial;
-    font-size: 32px;
-    animation: ${float} 3s ease-in-out infinite;
+const TitleIcon = styled.div`
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: ${({ theme }) => theme.gradientPrimary || "linear-gradient(135deg, #7C4DFF, #9C6FFF)"};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 20px;
+  box-shadow: 0 6px 16px ${({ theme }) => theme.primary + "40"};
+  animation: ${float} 4s ease-in-out infinite;
+`;
+
+const PageTitle = styled.h1`
+  font-size: 28px;
+  font-weight: 800;
+  color: ${({ theme }) => theme.text};
+  margin: 0;
+  letter-spacing: -0.5px;
+`;
+
+const PageSubtitle = styled.p`
+  font-size: 14px;
+  color: ${({ theme }) => theme.textSoft};
+  margin: 0;
+`;
+
+// ─── Post Composer ─────────────────────────────────────────────────────────────
+
+const ComposerCard = styled.div`
+  background: ${({ theme }) => theme.bgLighter};
+  border: 1px solid ${({ theme }) => theme.border};
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 20px;
+  animation: ${fadeInUp} 0.5s ease-out;
+  transition: border-color 0.2s;
+
+  &:focus-within {
+    border-color: ${({ theme }) => theme.primary + "60"};
+    box-shadow: 0 0 0 3px ${({ theme }) => theme.primary + "12"};
   }
 `;
 
-const Subtitle = styled.p`
-  color: ${({ theme }) => theme.textSoft};
-  font-size: 16px;
-`;
-
-// --- Create Post Section ---
-
-const CreatePostBox = styled.div`
-  background: ${({ theme }) => theme.bgLighter};
-  border-radius: 24px;
-  padding: 24px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-  border: 1px solid ${({ theme }) => theme.soft + "50"};
-  animation: ${fadeInUp} 0.7s ease-out;
+const ComposerTop = styled.div`
   display: flex;
-  flex-direction: column;
-  gap: 16px;
-`;
-
-const InputWrapper = styled.div`
-  display: flex;
-  gap: 16px;
+  gap: 14px;
   align-items: flex-start;
+  margin-bottom: 14px;
 `;
 
-const StyledInput = styled.textarea`
-  width: 100%;
+const StyledTextarea = styled.textarea`
+  flex: 1;
   border: none;
   background: ${({ theme }) => theme.bg};
   color: ${({ theme }) => theme.text};
-  padding: 16px;
-  border-radius: 16px;
-  font-size: 15px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  font-size: 14px;
   resize: none;
   min-height: 80px;
   font-family: inherit;
-  transition: all 0.3s;
+  outline: none;
+  width: 100%;
+  transition: all 0.2s;
+  line-height: 1.6;
 
-  &:focus {
-    outline: 2px solid ${({ theme }) => theme.primary + "50"};
-    background: ${({ theme }) => theme.bgLighter};
-  }
-
-  &::placeholder {
-    color: ${({ theme }) => theme.textSoft};
-  }
+  &::placeholder { color: ${({ theme }) => theme.textMuted || theme.textSoft}; }
+  &:focus { background: ${({ theme }) => theme.bgCard || theme.bgLighter}; }
 `;
 
-const ActionsBar = styled.div`
+const ComposerActions = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 10px;
-  border-top: 1px solid ${({ theme }) => theme.soft + "50"};
+  padding-top: 12px;
+  border-top: 1px solid ${({ theme }) => theme.border};
 `;
 
-const ActionButton = styled.button`
-  background: transparent;
-  border: none;
-  color: ${({ theme }) => theme.textSoft};
+const ComposerTools = styled.div`
+  display: flex;
+  gap: 4px;
+`;
+
+const ToolBtn = styled.button`
   display: flex;
   align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  padding: 8px 16px;
-  border-radius: 50px;
-  transition: all 0.2s;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: ${({ theme }) => theme.textSoft};
+  font-size: 13px;
   font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+
+  svg { font-size: 16px; }
 
   &:hover {
-    background: ${({ theme }) => theme.soft};
+    background: ${({ theme }) => theme.itemHover};
     color: ${({ theme }) => theme.primary};
   }
 `;
 
-// --- Post Card ---
-
-const BentoGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 20px;
-`;
-
-const BentoItem = styled.div`
-  background: ${({ theme }) => theme.bgLighter};
-  border-radius: 20px;
-  padding: 24px;
-  position: relative;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-
-  /* Glassmorphism */
-  backdrop-filter: blur(10px);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    border-color: ${({ theme }) => theme.primary + "50"};
-  }
-`;
+// ─── Post Card ─────────────────────────────────────────────────────────────────
 
 const PostCard = styled.div`
   background: ${({ theme }) => theme.bgLighter};
-  border-radius: 24px;
-  padding: 24px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-  position: relative;
-  overflow: hidden;
-  margin-bottom: 24px;
-  border: 1px solid transparent;
-
-  /* Border Beam Effect placeholder - simplified for CSS-in-JS without extra dom nodes */
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 24px; 
-    padding: 2px;
-    background: linear-gradient(90deg, transparent, ${({ theme }) => theme.primary}, transparent);
-    -webkit-mask: 
-       linear-gradient(#fff 0 0) content-box, 
-       linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
-    opacity: 0.5;
-  }
+  border: 1px solid ${({ theme }) => theme.border};
+  border-radius: 20px;
+  padding: 22px;
+  margin-bottom: 16px;
+  transition: all 0.25s ease;
+  animation: ${fadeInUp} 0.5s ease-out;
 
   &:hover {
-     box-shadow: 0 10px 40px rgba(133, 76, 230, 0.15);
-     transform: translateY(-2px);
-     &::before {
-       background: linear-gradient(90deg, ${({ theme }) => theme.primary}, #C77DFF, ${({ theme }) => theme.primary});
-       opacity: 1;
-     }
+    border-color: ${({ theme }) => theme.primary + "40"};
+    box-shadow: 0 8px 32px ${({ theme }) => theme.primary + "12"};
   }
-`;
-
-// Helper to render stars/badges
-const Badge = styled.span`
-  background: linear-gradient(135deg, #FFD700 0%, #FDB931 100%);
-  color: #333;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 10px;
-  font-weight: 800;
-  text-transform: uppercase;
-  margin-left: 8px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 `;
 
 const PostHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 `;
 
 const UserInfo = styled.div`
@@ -260,145 +201,263 @@ const UserInfo = styled.div`
   gap: 12px;
 `;
 
-const UserName = styled.h4`
-  color: ${({ theme }) => theme.text};
+const UserDetails = styled.div``;
+
+const UserName = styled.div`
+  font-size: 15px;
   font-weight: 700;
-  margin: 0;
-  font-size: 16px;
+  color: ${({ theme }) => theme.text};
 `;
 
-const PostMeta = styled.span`
-  color: ${({ theme }) => theme.textSoft};
+const PostMeta = styled.div`
   font-size: 12px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  color: ${({ theme }) => theme.textSoft};
+  margin-top: 2px;
 `;
 
 const PostContent = styled.p`
   color: ${({ theme }) => theme.text};
-  line-height: 1.6;
-  font-size: 15px;
-  margin-bottom: 16px;
+  font-size: 14px;
+  line-height: 1.7;
+  margin: 0 0 16px;
   white-space: pre-line;
 `;
 
 const PostImage = styled.img`
   width: 100%;
-  border-radius: 16px;
+  border-radius: 14px;
   margin-bottom: 16px;
-  max-height: 400px;
+  max-height: 380px;
   object-fit: cover;
-  border: 1px solid ${({ theme }) => theme.soft};
+  border: 1px solid ${({ theme }) => theme.border};
 `;
 
 const InteractionBar = styled.div`
   display: flex;
-  gap: 20px;
-  padding-top: 16px;
-  border-top: 1px solid ${({ theme }) => theme.soft + "30"};
+  gap: 4px;
+  padding-top: 14px;
+  border-top: 1px solid ${({ theme }) => theme.border};
 `;
 
-const StatItem = styled.div`
+const InteractionBtn = styled.button`
   display: flex;
   align-items: center;
-  gap: 6px;
-  color: ${({ liked, theme }) => liked ? '#ef4444' : theme.textSoft};
+  gap: 7px;
+  padding: 7px 14px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
+  font-family: inherit;
   transition: all 0.2s;
+  color: ${({ $liked, theme }) => $liked ? theme.red || "#FF5252" : theme.textSoft};
+
+  svg {
+    font-size: 17px;
+    animation: ${({ $liked }) => $liked ? heartBeat : "none"} 0.3s ease;
+  }
 
   &:hover {
-    color: ${({ theme }) => theme.primary};
-    transform: scale(1.05);
+    background: ${({ $liked, theme }) => $liked ? "rgba(255,82,82,0.1)" : theme.itemHover};
+    color: ${({ $liked, theme }) => $liked ? theme.red || "#FF5252" : theme.text};
   }
 `;
 
-// --- Sidebar Components ---
+// ─── Comments Section ─────────────────────────────────────────────────────────
+
+const CommentsSection = styled.div`
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid ${({ theme }) => theme.border};
+`;
+
+const CommentItem = styled.div`
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+`;
+
+const CommentBubble = styled.div`
+  background: ${({ theme }) => theme.bg};
+  border: 1px solid ${({ theme }) => theme.border};
+  border-radius: 14px;
+  padding: 10px 14px;
+  flex: 1;
+`;
+
+const CommentName = styled.span`
+  font-size: 13px;
+  font-weight: 700;
+  color: ${({ theme }) => theme.text};
+`;
+
+const CommentText = styled.p`
+  font-size: 13px;
+  color: ${({ theme }) => theme.textSoft};
+  margin: 4px 0 0;
+  line-height: 1.5;
+`;
+
+const CommentTime = styled.span`
+  font-size: 11px;
+  color: ${({ theme }) => theme.textMuted || theme.textSoft};
+  opacity: 0.7;
+`;
+
+const CommentInputRow = styled.div`
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 12px;
+`;
+
+const CommentInput = styled.input`
+  flex: 1;
+  background: ${({ theme }) => theme.bg};
+  border: 1.5px solid ${({ theme }) => theme.border};
+  padding: 9px 16px;
+  border-radius: 50px;
+  color: ${({ theme }) => theme.text};
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.2s;
+
+  &::placeholder { color: ${({ theme }) => theme.textMuted || theme.textSoft}; }
+  &:focus { border-color: ${({ theme }) => theme.primary}; }
+`;
+
+const SendBtn = styled.button`
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: ${({ theme }) => theme.gradientPrimary || "linear-gradient(135deg, #7C4DFF, #9C6FFF)"};
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+
+  svg { font-size: 15px; }
+
+  &:hover { transform: scale(1.1); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+`;
+
+// ─── Sidebar ────────────────────────────────────────────────────────────────────
+
+const SidebarCard = styled.div`
+  background: ${({ theme }) => theme.bgLighter};
+  border: 1px solid ${({ theme }) => theme.border};
+  border-radius: 20px;
+  padding: 20px;
+  animation: ${fadeInUp} 0.6s ease-out;
+
+  & + & { margin-top: 16px; }
+`;
 
 const SidebarTitle = styled.h3`
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 700;
-  margin-bottom: 16px;
   color: ${({ theme }) => theme.text};
+  margin: 0 0 16px;
   display: flex;
   align-items: center;
   gap: 8px;
 `;
 
 const TrendingItem = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  border-bottom: 1px solid ${({ theme }) => theme.soft + "30"};
-  padding: 12px 0;
+  padding: 10px 12px;
+  margin: 0 -12px;
+  border-radius: 8px;
+  border-bottom: 1px solid ${({ theme }) => theme.border};
   cursor: pointer;
+  transition: all 0.2s;
+  background: ${({ $active, theme }) => $active ? theme.itemHover || "rgba(124, 77, 255, 0.05)" : "transparent"};
 
-  &:last-child {
-    border-bottom: none;
+  &:last-child { border-bottom: none; }
+
+  h5 {
+     color: ${({ $active, theme }) => $active ? theme.primary : theme.text};
+     transition: color 0.2s;
   }
 
-  &:hover h5 {
-    color: ${({ theme }) => theme.primary};
+  &:hover {
+     background: ${({ theme }) => theme.itemHover || "rgba(124, 77, 255, 0.05)"};
   }
+  &:hover h5 { color: ${({ theme }) => theme.primary}; }
 `;
 
-const TrendingTag = styled.span`
-  font-size: 12px;
-  color: ${({ theme }) => theme.textSoft};
-`;
-
-const TrendingTopic = styled.h5`
-  font-size: 14px;
+const TrendTag = styled.div`
+  font-size: 11px;
   font-weight: 600;
+  color: ${({ theme }) => theme.textMuted || theme.textSoft};
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 3px;
+`;
+
+const TrendTopic = styled.h5`
+  font-size: 14px;
+  font-weight: 700;
   color: ${({ theme }) => theme.text};
   margin: 0;
   transition: color 0.2s;
 `;
 
-const TRENDING = [
-  { tag: "Development", topic: "#Reactjs2024" },
-  { tag: "Design", topic: "#UIUXTrends" },
-  { tag: "Productivity", topic: "#RemoteWorkLife" },
-  { tag: "Announcements", topic: "#Q1Goals" },
-];
-
-const CommentsSection = styled.div`
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid ${({ theme }) => theme.soft + "30"};
-  animation: ${fadeInUp} 0.5s ease-out;
+const TrendCount = styled.span`
+  font-size: 11px;
+  color: ${({ theme }) => theme.textSoft};
+  margin-top: 2px;
+  display: block;
 `;
 
-const CommentItem = styled.div`
+const CommunityStatRow = styled.div`
   display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
-`;
-
-const CommentInputWrapper = styled.div`
-  display: flex;
-  gap: 12px;
   align-items: center;
-  margin-top: 16px;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid ${({ theme }) => theme.border};
+
+  &:last-child { border-bottom: none; padding-bottom: 0; }
 `;
 
-const CommentInput = styled.input`
-    width: 100%;
-    background: ${({ theme }) => theme.bg};
-    border: 1px solid ${({ theme }) => theme.soft};
-    padding: 10px 16px;
-    border-radius: 20px;
-    color: ${({ theme }) => theme.text};
-    outline: none;
-    font-size: 14px;
-    transition: all 0.3s;
-
-    &:focus {
-        border-color: ${({ theme }) => theme.primary};
-    }
+const CommunityStatIcon = styled.div`
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: ${({ $bg }) => $bg || "rgba(124,77,255,0.12)"};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${({ $color }) => $color || "#7C4DFF"};
+  font-size: 18px;
+  flex-shrink: 0;
 `;
+
+const CommunityStatText = styled.div`
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: ${({ theme }) => theme.text};
+  span { display: block; font-size: 12px; font-weight: 400; color: ${({ theme }) => theme.textSoft}; }
+`;
+
+const EmptyState = styled.div`
+  text-align: center;
+  padding: 60px 20px;
+  color: ${({ theme }) => theme.textSoft};
+  .emoji { font-size: 48px; margin-bottom: 16px; display: block; }
+  h3 { font-size: 18px; font-weight: 700; color: ${({ theme }) => theme.text}; margin-bottom: 6px; }
+  p { font-size: 14px; }
+`;
+
+// ─── Component ─────────────────────────────────────────────────────────────────
 
 const CommunityNew = () => {
   const theme = useTheme();
@@ -408,11 +467,56 @@ const CommunityNew = () => {
   const [loading, setLoading] = useState(true);
   const [newPost, setNewPost] = useState("");
   const [postLoading, setPostLoading] = useState(false);
-  const [openComments, setOpenComments] = useState(null); // ID of post with active comments section
-  const [comments, setComments] = useState([]); // Comments for the active post
+  const [openComments, setOpenComments] = useState(null);
+  const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState("");
   const [commentLoading, setCommentLoading] = useState(false);
+  const [selectedTag, setSelectedTag] = useState(null);
+  const [editPostId, setEditPostId] = useState(null);
+  const [editPostDesc, setEditPostDesc] = useState("");
+  
+  // Menu State
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [menuPostId, setMenuPostId] = useState(null);
 
+  const handleMenuOpen = (event, postId) => {
+    setAnchorEl(event.currentTarget);
+    setMenuPostId(postId);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setMenuPostId(null);
+  };
+
+  const trendingTopics = React.useMemo(() => {
+    const tagCounts = {};
+    posts.forEach(post => {
+      const desc = post.desc || "";
+      const matches = desc.match(/#[\w]+/g);
+      if (matches) {
+        matches.forEach(tag => {
+          tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+        });
+      }
+    });
+
+    const calculatedTags = Object.entries(tagCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5) // Top 5
+      .map(([topic, count]) => ({
+        tag: "Trending", 
+        topic,
+        count: `${count} post${count > 1 ? 's' : ''}`
+      }));
+
+    return calculatedTags;
+  }, [posts]);
+
+  const filteredPosts = React.useMemo(() => {
+      if (!selectedTag) return posts;
+      return posts.filter(post => (post.desc || "").toLowerCase().includes(selectedTag.toLowerCase()));
+  }, [posts, selectedTag]);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -427,10 +531,7 @@ const CommunityNew = () => {
         setLoading(false);
       }
     };
-
-    if (currentUser) {
-      fetchPosts();
-    }
+    if (currentUser) fetchPosts();
   }, [currentUser, dispatch]);
 
   const handleLike = async (id) => {
@@ -458,11 +559,9 @@ const CommunityNew = () => {
     try {
       const token = localStorage.getItem("token");
       const res = await createPost({ desc: newPost }, token);
-      // Assuming the backend returns the full new post object.
-      // If the backend returns consistent structure, prepending it should work.
       setPosts([res.data, ...posts]);
       setNewPost("");
-      dispatch(openSnackbar({ message: "Post created successfully!", type: "success" }));
+      dispatch(openSnackbar({ message: "Post created!", type: "success" }));
       setPostLoading(false);
     } catch (err) {
       dispatch(openSnackbar({ message: err.response?.data?.message || err.message, type: "error" }));
@@ -470,9 +569,35 @@ const CommunityNew = () => {
     }
   };
 
-  const isLiked = (post) => {
-    return post.likes.includes(currentUser?._id);
+  const handleDeletePost = async (postId) => {
+    try {
+      const token = localStorage.getItem("token");
+      await deletePost(postId, token);
+      setPosts(posts.filter((p) => p._id !== postId));
+      dispatch(openSnackbar({ message: "Post deleted successfully", type: "success" }));
+    } catch (err) {
+      dispatch(openSnackbar({ message: err.response?.data?.message || "Failed to delete post", type: "error" }));
+    }
   };
+
+  const handleUpdatePost = async (postId) => {
+    if (!editPostDesc.trim()) return;
+    setPostLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      await updatePost(postId, { desc: editPostDesc }, token);
+      setPosts(posts.map(p => p._id === postId ? { ...p, desc: editPostDesc } : p));
+      setEditPostId(null);
+      setEditPostDesc("");
+      dispatch(openSnackbar({ message: "Post updated successfully", type: "success" }));
+      setPostLoading(false);
+    } catch (err) {
+      dispatch(openSnackbar({ message: err.response?.data?.message || "Failed to update post", type: "error" }));
+      setPostLoading(false);
+    }
+  };
+
+  const isLiked = (post) => post.likes?.includes(currentUser?._id);
 
   const handleCommentClick = async (postId) => {
     if (openComments === postId) {
@@ -498,7 +623,6 @@ const CommunityNew = () => {
       const res = await addComment({ postId, desc: commentText }, token);
       setComments([res.data, ...comments]);
       setCommentText("");
-      // Update comments count in posts list locally
       setPosts(posts.map(p => p._id === postId ? { ...p, comments: [...p.comments, res.data._id] } : p));
       setCommentLoading(false);
     } catch (err) {
@@ -507,139 +631,285 @@ const CommunityNew = () => {
     }
   };
 
-
   return (
     <Container>
-      <Header>
-        <Title>Community Hub</Title>
-        <Subtitle>Connect, share, and grow with your team.</Subtitle>
-      </Header>
+      {/* Header */}
+      <PageHeader>
+        <TitleRow>
+          <TitleIcon>
+            <Public />
+          </TitleIcon>
+          <PageTitle>Community Hub</PageTitle>
+        </TitleRow>
+        <PageSubtitle>Connect, share ideas, and grow together with your team</PageSubtitle>
+      </PageHeader>
 
-      <ContentWrapper>
-        <MainFeed>
-          <CreatePostBox>
-            <InputWrapper>
-              <Avatar src={currentUser?.img} sx={{ width: 44, height: 44 }}>{currentUser?.name[0]}</Avatar>
-              <StyledInput
-                placeholder="Share something with the community..."
+      <ContentGrid>
+        {/* Main Feed */}
+        <div>
+          {/* Composer */}
+          <ComposerCard>
+            <ComposerTop>
+              <Avatar
+                src={currentUser?.img}
+                sx={{ width: 40, height: 40, flexShrink: 0 }}
+              >
+                {currentUser?.name?.[0]}
+              </Avatar>
+              <StyledTextarea
+                placeholder={`What's on your mind, ${currentUser?.name?.split(' ')[0]}?`}
                 value={newPost}
                 onChange={(e) => setNewPost(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) handleCreatePost();
+                }}
               />
-            </InputWrapper>
-            <ActionsBar>
-              <div style={{ display: 'flex', gap: '8px' }}>
-              </div>
+            </ComposerTop>
+            <ComposerActions style={{ justifyContent: 'flex-end' }}>
               <GalaxyButton
-                style={{ padding: '8px 24px', fontSize: '14px' }}
+                style={{ padding: '9px 20px', fontSize: '13px' }}
                 onClick={handleCreatePost}
-                disabled={postLoading}
+                disabled={postLoading || !newPost.trim()}
               >
-                {postLoading ? "Posting..." : "Post"} <Send sx={{ fontSize: 16, marginLeft: '6px' }} />
+                <Send style={{ fontSize: 15 }} />
+                {postLoading ? "Posting..." : "Post"}
               </GalaxyButton>
-            </ActionsBar>
-          </CreatePostBox>
+            </ComposerActions>
+          </ComposerCard>
 
+          {/* Posts */}
           {loading ? (
-            <div style={{ display: "flex", justifyContent: "center", padding: "40px" }}>
+            <div style={{ display: "flex", justifyContent: "center", padding: "60px" }}>
               <PremiumLoader />
             </div>
+          ) : filteredPosts.length === 0 ? (
+            <EmptyState>
+              <span className="emoji">✨</span>
+              {selectedTag ? (
+                 <>
+                    <h3>No posts found for {selectedTag}</h3>
+                    <p>Try selecting a different topic or clear the filter.</p>
+                 </>
+              ) : (
+                 <>
+                    <h3>No posts yet</h3>
+                    <p>Be the first to share something with the community!</p>
+                 </>
+              )}
+            </EmptyState>
           ) : (
-            posts.map((post) => (
+            filteredPosts.map((post) => (
               <PostCard key={post._id}>
                 <PostHeader>
                   <UserInfo>
-                    <Avatar src={post.img} sx={{ width: 42, height: 42 }}>{post.name?.[0]}</Avatar>
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <UserName>{post.name}</UserName>
-                        {/* Logic for badges can be improved based on user role */}
-                      </div>
-                      <PostMeta>
-                        {format(post.createdAt)}
-                      </PostMeta>
-                    </div>
+                    <Avatar src={post.img} sx={{ width: 42, height: 42 }}>
+                      {post.name?.[0]}
+                    </Avatar>
+                    <UserDetails>
+                      <UserName>{post.name}</UserName>
+                      <PostMeta>{format(post.createdAt)}</PostMeta>
+                    </UserDetails>
                   </UserInfo>
-                  <IconButton size="small"><MoreHoriz /></IconButton>
+                  <>
+                    <IconButton size="small" sx={{ color: theme.textSoft }} onClick={(e) => handleMenuOpen(e, post._id)}>
+                      <MoreHoriz fontSize="small" />
+                    </IconButton>
+                    <Menu
+                      anchorEl={anchorEl}
+                      open={Boolean(anchorEl) && menuPostId === post._id}
+                      onClose={handleMenuClose}
+                      PaperProps={{
+                        style: {
+                          backgroundColor: theme.bgCard || theme.bgLighter || "#1E1E2D",
+                          color: theme.text,
+                          boxShadow: `0 8px 32px rgba(0,0,0,0.2)`,
+                          borderRadius: '12px',
+                          border: `1px solid ${theme.border}`,
+                          marginTop: '8px'
+                        }
+                      }}
+                    >
+                      {currentUser?._id === post.userId && (
+                        <MenuItem onClick={() => { handleMenuClose(); setEditPostId(post._id); setEditPostDesc(post.desc); }}>
+                          <ListItemIcon><Edit fontSize="small" sx={{ color: theme.textSoft }} /></ListItemIcon>
+                          <ListItemText primary="Edit Post" sx={{ span: { fontSize: '13px', fontWeight: 500 } }}/>
+                        </MenuItem>
+                      )}
+                      
+                      <MenuItem onClick={() => { handleMenuClose(); navigator.clipboard.writeText(window.location.href); dispatch(openSnackbar({ message: "Link copied to clipboard!", type: "success" })); }}>
+                        <ListItemIcon><Link fontSize="small" sx={{ color: theme.textSoft }} /></ListItemIcon>
+                        <ListItemText primary="Copy Link" sx={{ span: { fontSize: '13px', fontWeight: 500 } }}/>
+                      </MenuItem>
+                      
+                      {currentUser?._id === post.userId && (
+                        <MenuItem onClick={() => { handleDeletePost(post._id); handleMenuClose(); }} sx={{ color: theme.red || "#FF5252" }}>
+                          <ListItemIcon><DeleteOutline fontSize="small" sx={{ color: theme.red || "#FF5252" }} /></ListItemIcon>
+                          <ListItemText primary="Delete Post" sx={{ span: { fontSize: '13px', fontWeight: 500 } }}/>
+                        </MenuItem>
+                      )}
+                    </Menu>
+                  </>
                 </PostHeader>
-                <PostContent>{post.desc}</PostContent>
-                {post.img && <PostImage src={post.img} alt="Post content" />}
+
+                {editPostId === post._id ? (
+                  <div style={{ marginBottom: 16 }}>
+                    <StyledTextarea
+                      value={editPostDesc}
+                      onChange={(e) => setEditPostDesc(e.target.value)}
+                      style={{ minHeight: "80px", border: `1px solid ${theme.border}`, marginBottom: 12, padding: "12px", background: theme.bg }}
+                      autoFocus
+                    />
+                    <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+                      <GalaxyButton 
+                        style={{ padding: '7px 16px', fontSize: '13px', background: 'transparent', color: theme.text, border: `1px solid ${theme.border}` }} 
+                        onClick={() => { setEditPostId(null); setEditPostDesc(""); }}
+                      >
+                        Cancel
+                      </GalaxyButton>
+                      <GalaxyButton 
+                        style={{ padding: '7px 16px', fontSize: '13px' }} 
+                        onClick={() => handleUpdatePost(post._id)}
+                        disabled={postLoading || !editPostDesc.trim() || editPostDesc === post.desc}
+                      >
+                        Save Changes
+                      </GalaxyButton>
+                    </div>
+                  </div>
+                ) : (
+                  <PostContent>{post.desc}</PostContent>
+                )}
+                
+                {post.img && <PostImage src={post.img} alt="Post" />}
 
                 <InteractionBar>
-                  <StatItem onClick={() => handleLike(post._id)} liked={isLiked(post)}>
-                    {isLiked(post) ? <Favorite /> : <FavoriteBorder />} {post.likes.length}
-                  </StatItem>
-                  <StatItem onClick={() => handleCommentClick(post._id)}>
-                    <ChatBubbleOutline /> {post.comments?.length || 0}
-                  </StatItem>
-                  <StatItem>
-                    <Share /> Share
-                  </StatItem>
+                  <InteractionBtn $liked={isLiked(post)} onClick={() => handleLike(post._id)}>
+                    {isLiked(post) ? <Favorite /> : <FavoriteBorder />}
+                    {post.likes?.length || 0}
+                  </InteractionBtn>
+                  <InteractionBtn onClick={() => handleCommentClick(post._id)}>
+                    <ChatBubbleOutline />
+                    {post.comments?.length || 0}
+                  </InteractionBtn>
+                  <InteractionBtn>
+                    <Share />
+                    Share
+                  </InteractionBtn>
                 </InteractionBar>
 
                 {openComments === post._id && (
                   <CommentsSection>
                     {comments.map((comment) => (
                       <CommentItem key={comment._id}>
-                        <Avatar src={comment.img} sx={{ width: 32, height: 32 }}>{comment.name?.[0]}</Avatar>
-                        <div>
-                          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                            <b style={{ fontSize: '14px', color: theme.text }}>{comment.name}</b>
-                            <span style={{ fontSize: '11px', color: theme.textSoft }}>{format(comment.createdAt)}</span>
+                        <Avatar src={comment.img} sx={{ width: 30, height: 30, fontSize: 12, flexShrink: 0 }}>
+                          {comment.name?.[0]}
+                        </Avatar>
+                        <CommentBubble>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <CommentName>{comment.name}</CommentName>
+                            <CommentTime>{format(comment.createdAt)}</CommentTime>
                           </div>
-                          <p style={{ fontSize: '13px', color: theme.textSoft, marginTop: '2px' }}>{comment.desc}</p>
-                        </div>
+                          <CommentText>{comment.desc}</CommentText>
+                        </CommentBubble>
                       </CommentItem>
                     ))}
-                    {comments.length === 0 && <div style={{ fontSize: '13px', color: theme.textSoft, marginBottom: '10px' }}>No comments yet.</div>}
-
-                    <CommentInputWrapper>
-                      <Avatar src={currentUser?.img} sx={{ width: 32, height: 32 }}>{currentUser?.name[0]}</Avatar>
+                    {comments.length === 0 && (
+                      <div style={{ fontSize: 13, color: theme.textSoft, marginBottom: 12, textAlign: 'center' }}>
+                        No comments yet. Start the conversation!
+                      </div>
+                    )}
+                    <CommentInputRow>
+                      <Avatar src={currentUser?.img} sx={{ width: 30, height: 30, fontSize: 12, flexShrink: 0 }}>
+                        {currentUser?.name?.[0]}
+                      </Avatar>
                       <CommentInput
-                        placeholder="Write a comment..."
+                        placeholder="Write a comment... (Press Enter to send)"
                         value={commentText}
                         onChange={(e) => setCommentText(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleAddComment(post._id)}
                       />
-                      <IconButton
-                        size="small"
+                      <SendBtn
                         onClick={() => handleAddComment(post._id)}
-                        disabled={commentLoading}
-                        color="primary"
+                        disabled={commentLoading || !commentText.trim()}
                       >
-                        <Send fontSize="small" />
-                      </IconButton>
-                    </CommentInputWrapper>
+                        <Send />
+                      </SendBtn>
+                    </CommentInputRow>
                   </CommentsSection>
                 )}
-
               </PostCard>
             ))
           )}
-          {!loading && posts.length === 0 && (
-            <div style={{ textAlign: "center", color: theme.textSoft, padding: "20px" }}>
-              No posts yet. Be the first to share something!
-            </div>
-          )}
-        </MainFeed>
+        </div>
 
-        <Sidebar>
-          <BentoGrid>
-            <BentoItem>
-              <SidebarTitle>🔥 Trending Topics</SidebarTitle>
-              {TRENDING.map((item, index) => (
-                <TrendingItem key={index}>
-                  <TrendingTag>{item.tag}</TrendingTag>
-                  <TrendingTopic>{item.topic}</TrendingTopic>
+        {/* Sidebar */}
+        <div>
+          <SidebarCard>
+            <SidebarTitle>
+              <TrendingUp style={{ color: theme.primary, fontSize: 18 }} />
+              Trending Topics
+              {selectedTag && (
+                <span 
+                  style={{fontSize: 12, marginLeft: "auto", color: theme.textSoft, cursor: "pointer", fontWeight: 'normal'}}
+                  onClick={() => setSelectedTag(null)}
+                >
+                  Clear Filter
+                </span>
+              )}
+            </SidebarTitle>
+            {trendingTopics.length > 0 ? (
+              trendingTopics.map((item, i) => (
+                <TrendingItem 
+                  key={i} 
+                  $active={selectedTag === item.topic} 
+                  onClick={() => setSelectedTag(selectedTag === item.topic ? null : item.topic)}
+                >
+                  <TrendTag>{item.tag}</TrendTag>
+                  <TrendTopic>{item.topic}</TrendTopic>
+                  <TrendCount>{item.count}</TrendCount>
                 </TrendingItem>
-              ))}
-            </BentoItem>
+              ))
+            ) : (
+                <div style={{ fontSize: 13, color: theme.textSoft, textAlign: "center", padding: "10px 0" }}>
+                   No trending topics yet. Use hashtags in your posts to start one!
+                </div>
+            )}
+          </SidebarCard>
 
-
-
-
-          </BentoGrid>
-        </Sidebar>
-      </ContentWrapper>
+          <SidebarCard style={{ marginTop: 16 }}>
+            <SidebarTitle>
+              <People style={{ color: theme.accentGreen || "#00E5A0", fontSize: 18 }} />
+              Community Stats
+            </SidebarTitle>
+            <CommunityStatRow>
+              <CommunityStatIcon $bg="rgba(124,77,255,0.12)" $color={theme.primary}>
+                <Public style={{ fontSize: 18 }} />
+              </CommunityStatIcon>
+              <CommunityStatText>
+                {posts.length} Total Posts
+                <span>Community contributions</span>
+              </CommunityStatText>
+            </CommunityStatRow>
+            <CommunityStatRow>
+              <CommunityStatIcon $bg="rgba(0,229,160,0.12)" $color={theme.accentGreen || "#00E5A0"}>
+                <Favorite style={{ fontSize: 18 }} />
+              </CommunityStatIcon>
+              <CommunityStatText>
+                {posts.reduce((acc, p) => acc + (p.likes?.length || 0), 0)} Total Likes
+                <span>Across all posts</span>
+              </CommunityStatText>
+            </CommunityStatRow>
+            <CommunityStatRow>
+              <CommunityStatIcon $bg="rgba(0,212,255,0.12)" $color={theme.accent || "#00D4FF"}>
+                <ChatBubbleOutline style={{ fontSize: 18 }} />
+              </CommunityStatIcon>
+              <CommunityStatText>
+                {posts.reduce((acc, p) => acc + (p.comments?.length || 0), 0)} Comments
+                <span>Total discussions</span>
+              </CommunityStatText>
+            </CommunityStatRow>
+          </SidebarCard>
+        </div>
+      </ContentGrid>
     </Container>
   );
 };

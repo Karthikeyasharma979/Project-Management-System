@@ -1,59 +1,92 @@
 export const darkTheme = {
-    bg: "#15171E",
-    bgLighter: "#1C1E27",
-    itemHover: "#3A3C45",
-    itemText: "#DADEDF",
-    primary: "#854CE6",
-    bgDark: "#15171E",
-    text: "#F2F3F4",
-    textSoft: "#C1C7C9",
-    soft: "#373D3F",
-    soft2: "#8C979A",
-    card: "#1C1E27",
+    bg: "#0D0F17",
+    bgLighter: "#161822",
+    bgCard: "#1A1C28",
+    itemHover: "#252736",
+    itemText: "#C8CEDF",
+    primary: "#7C4DFF",
+    primaryLight: "#9C6FFF",
+    primaryDark: "#5C3DBF",
+    accent: "#00D4FF",
+    accentGreen: "#00E5A0",
+    accentOrange: "#FF8A65",
+    bgDark: "#0A0C13",
+    text: "#F0F2FA",
+    textSoft: "#9BA4C0",
+    textMuted: "#6B7494",
+    soft: "#2A2D3E",
+    soft2: "#7B82A0",
+    border: "#252838",
+    borderLight: "#2E3248",
+    card: "#161822",
     lightAdd: "99",
-    yellow: "#fccf03",
-    green: "#03fc45",
-    pink: "#fc036b",
+    yellow: "#FFD93D",
+    green: "#00E5A0",
+    red: "#FF5252",
+    pink: "#FF4081",
+    orange: "#FF8A65",
     recieve_message: "#1a1826",
     chat_background: "#100f17",
-    send_message: "#4f34ad",
-    contact_background: "#151a21",
+    send_message: "#7C4DFF",
+    contact_background: "#0D0F17",
 
-    /*Colors
-Swatch 1
-#030405
-Swatch 2
-#585759
-Swatch 3
-#03840c
-Swatch 4
-#acb0b3
-Swatch 5
-#185c1a
-Swatch 6
-#40b957*/
-}
+    // Gradient tokens
+    gradientPrimary: "linear-gradient(135deg, #7C4DFF 0%, #9C6FFF 100%)",
+    gradientHero: "linear-gradient(120deg, #7C4DFF 0%, #5C3DBF 60%, #3D2B9E 100%)",
+    gradientCard: "linear-gradient(135deg, rgba(124,77,255,0.08) 0%, rgba(0,212,255,0.04) 100%)",
+    gradientGreen: "linear-gradient(135deg, #00E5A0 0%, #00BCD4 100%)",
+    gradientOrange: "linear-gradient(135deg, #FF8A65 0%, #FFD93D 100%)",
+
+    // Glow effects
+    glowPrimary: "0 0 20px rgba(124, 77, 255, 0.4)",
+    glowAccent: "0 0 20px rgba(0, 212, 255, 0.4)",
+    shadowCard: "0 8px 32px rgba(0, 0, 0, 0.4)",
+    shadowHover: "0 16px 48px rgba(124, 77, 255, 0.3)",
+};
 
 export const lightTheme = {
-    bg: "#F8F9FD",
+    bg: "#F4F6FD",
     bgLighter: "#FFFFFF",
-    itemHover: "#F7F5F4",
-    itemText: "#555F61",
-    primary: "#854CE6",
-    bgDark: "white",
-    text: "#2F2F2F",
-    textSoft: "#606060",
-    soft: "#C4C4C4",
-    soft2: "#757575",
+    bgCard: "#FFFFFF",
+    itemHover: "#EEF0FF",
+    itemText: "#3D4263",
+    primary: "#7C4DFF",
+    primaryLight: "#9C6FFF",
+    primaryDark: "#5C3DBF",
+    accent: "#00B4D8",
+    accentGreen: "#00C98C",
+    accentOrange: "#FF7043",
+    bgDark: "#F0F2FA",
+    text: "#1A1D2E",
+    textSoft: "#4A5082",
+    textMuted: "#7880A8",
+    soft: "#E0E3F5",
+    soft2: "#8890B4",
+    border: "#DDE0F0",
+    borderLight: "#EAECF8",
     card: "#FFFFFF",
     lightAdd: "",
-    yellow: "#fccf03",
-    green: "#03fc45",
-    pink: "#fc036b",
+    yellow: "#FFD93D",
+    green: "#00C98C",
+    red: "#FF5252",
+    pink: "#E91E8C",
+    orange: "#FF7043",
     recieve_message: "#ffffff",
     chat_background: "#f5f5fc",
-    send_message: "#4f34ad",
+    send_message: "#7C4DFF",
     send_message_text_color: "#ffffff",
     contact_background: "#ffffff",
 
-}
+    // Gradient tokens
+    gradientPrimary: "linear-gradient(135deg, #7C4DFF 0%, #9C6FFF 100%)",
+    gradientHero: "linear-gradient(120deg, #7C4DFF 0%, #5C3DBF 60%, #3D2B9E 100%)",
+    gradientCard: "linear-gradient(135deg, rgba(124,77,255,0.06) 0%, rgba(0,180,216,0.03) 100%)",
+    gradientGreen: "linear-gradient(135deg, #00C98C 0%, #00B4D8 100%)",
+    gradientOrange: "linear-gradient(135deg, #FF7043 0%, #FFD93D 100%)",
+
+    // Glow effects
+    glowPrimary: "0 0 20px rgba(124, 77, 255, 0.25)",
+    glowAccent: "0 0 20px rgba(0, 180, 216, 0.25)",
+    shadowCard: "0 8px 32px rgba(0, 0, 0, 0.08)",
+    shadowHover: "0 16px 48px rgba(124, 77, 255, 0.2)",
+};

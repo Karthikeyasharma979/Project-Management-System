@@ -35,18 +35,33 @@ import { io } from 'socket.io-client';
 
 const Container = styled.div`
   height: 100vh;
-  display: flex; 
+  display: flex;
   background-color: ${({ theme }) => theme.bg};
   color: ${({ theme }) => theme.text};
-  overflow-x: hidden;
+  overflow: hidden;
 `;
 
 const Main = styled.div`
-  flex: 7;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
 `;
+
 const Wrapper = styled.div`
-  padding: 0% 1%;
-  overflow-y: scroll !important;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-thumb {
+    background: ${({ theme }) => theme.primary + '30'};
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: ${({ theme }) => theme.primary + '60'};
+  }
 `;
 
 function AppContent({ darkMode, setDarkMode }) {

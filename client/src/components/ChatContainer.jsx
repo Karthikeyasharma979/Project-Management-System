@@ -1,4 +1,4 @@
-import { ArrowBack, AttachFile, DoneAll, Send, Telegram } from '@mui/icons-material'
+import { ArrowBack, DoneAll, Send, Telegram } from '@mui/icons-material'
 import { Avatar, IconButton } from '@mui/material'
 import React, { useRef, useEffect, useState } from 'react'
 import { getMessages, addMessage } from '../api'
@@ -277,11 +277,8 @@ const ChatContainer = ({ showChat, setShowChat, currentChat, currentUser, socket
                         <div ref={messagesEndRef} />
                     </Chat>
                     <SendMessage>
-                        <IconButton style={{ color: 'inherit', marginBottom: '6px' }}>
-                            <AttachFile sx={{ height: '28px', width: '28px' }} />
-                        </IconButton>
                         <MessageBox>
-                            <Message placeholder="Type a message" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} />
+                            <Message placeholder="Type a message" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') handleSend(e) }} />
                         </MessageBox>
                         <IconButton style={{ color: 'inherit', marginBottom: '6px' }} onClick={handleSend}>
                             <Telegram sx={{ height: '30px', width: '30px' }} />

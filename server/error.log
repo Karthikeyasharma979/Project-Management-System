@@ -110,3 +110,33 @@
     at createError (file:///C:/Users/Paarthiv%20Ramaraju/OneDrive/Desktop/DevSync%20Major/server/error.js:2:17)
     at getTeamAnalytics (file:///C:/Users/Paarthiv%20Ramaraju/OneDrive/Desktop/DevSync%20Major/server/controllers/teams.js:614:32)
     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2026-03-17T06:11:39.458Z - Error: Invalid login: 535-5.7.8 Username and Password not accepted. For more information, go to
+535 5.7.8  https://support.google.com/mail/?p=BadCredentials 98e67ed59e1d1-35bad8a4507sm1746682a91.0 - gsmtp
+    at SMTPConnection._formatError (C:\Users\Paarthiv Ramaraju\OneDrive\Desktop\DevSync Major\server\node_modules\nodemailer\lib\smtp-connection\index.js:790:19)
+    at SMTPConnection._actionAUTHComplete (C:\Users\Paarthiv Ramaraju\OneDrive\Desktop\DevSync Major\server\node_modules\nodemailer\lib\smtp-connection\index.js:1542:34)
+    at SMTPConnection.<anonymous> (C:\Users\Paarthiv Ramaraju\OneDrive\Desktop\DevSync Major\server\node_modules\nodemailer\lib\smtp-connection\index.js:546:26)
+    at SMTPConnection._processResponse (C:\Users\Paarthiv Ramaraju\OneDrive\Desktop\DevSync Major\server\node_modules\nodemailer\lib\smtp-connection\index.js:953:20)
+    at SMTPConnection._onData (C:\Users\Paarthiv Ramaraju\OneDrive\Desktop\DevSync Major\server\node_modules\nodemailer\lib\smtp-connection\index.js:755:14)
+    at SMTPConnection._onSocketData (C:\Users\Paarthiv Ramaraju\OneDrive\Desktop\DevSync Major\server\node_modules\nodemailer\lib\smtp-connection\index.js:193:44)
+    at TLSSocket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+2026-03-17T06:20:00.209Z - Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client
+    at ServerResponse.setHeader (node:_http_outgoing:699:11)
+    at ServerResponse.header (C:\Users\Paarthiv Ramaraju\OneDrive\Desktop\DevSync Major\server\node_modules\express\lib\response.js:794:10)
+    at ServerResponse.send (C:\Users\Paarthiv Ramaraju\OneDrive\Desktop\DevSync Major\server\node_modules\express\lib\response.js:174:12)
+    at ServerResponse.json (C:\Users\Paarthiv Ramaraju\OneDrive\Desktop\DevSync Major\server\node_modules\express\lib\response.js:278:15)
+    at verifyInvitation (file:///C:/Users/Paarthiv%20Ramaraju/OneDrive/Desktop/DevSync%20Major/server/controllers/project.js:428:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2026-03-17T07:02:01.692Z - Error: Only the project owner can delete this project!
+    at createError (file:///C:/Users/Paarthiv%20Ramaraju/OneDrive/Desktop/DevSync%20Major/server/error.js:2:17)
+    at deleteProject (file:///C:/Users/Paarthiv%20Ramaraju/OneDrive/Desktop/DevSync%20Major/server/controllers/project.js:57:19)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2026-03-17T07:06:15.045Z - Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client
+    at ServerResponse.setHeader (node:_http_outgoing:699:11)
+    at ServerResponse.header (C:\Users\Paarthiv Ramaraju\OneDrive\Desktop\DevSync Major\server\node_modules\express\lib\response.js:794:10)
+    at ServerResponse.send (C:\Users\Paarthiv Ramaraju\OneDrive\Desktop\DevSync Major\server\node_modules\express\lib\response.js:174:12)
+    at ServerResponse.json (C:\Users\Paarthiv Ramaraju\OneDrive\Desktop\DevSync Major\server\node_modules\express\lib\response.js:278:15)
+    at verifyInvitation (file:///C:/Users/Paarthiv%20Ramaraju/OneDrive/Desktop/DevSync%20Major/server/controllers/project.js:428:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)

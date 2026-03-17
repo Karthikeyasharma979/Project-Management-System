@@ -1,6 +1,6 @@
 import express from "express";
 import { verifyToken } from "../middleware/verifyToken.js";
-import { createPost, deletePost, getPosts, likePost, addComment, getComments } from "../controllers/community.js";
+import { createPost, deletePost, getPosts, likePost, addComment, getComments, updatePost } from "../controllers/community.js";
 
 const router = express.Router();
 
@@ -21,5 +21,8 @@ router.get("/comments/:postId", verifyToken, getComments);
 
 //delete a post
 router.delete("/:id", verifyToken, deletePost);
+
+//update a post
+router.put("/:id", verifyToken, updatePost);
 
 export default router;

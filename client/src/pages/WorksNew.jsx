@@ -1,121 +1,193 @@
 import React, { useState, useEffect } from "react";
 import styled, { keyframes, useTheme } from "styled-components";
-import { Avatar, IconButton, Chip, LinearProgress } from "@mui/material";
-import { MoreHoriz, CheckCircleOutline, DonutLarge, CalendarToday, Assignment, ArrowForward } from "@mui/icons-material";
-import { GalaxyButton, PremiumLoader } from "../components/CreativeComponents";
-import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
+import { Avatar, Chip, LinearProgress } from "@mui/material";
+import {
+  CheckCircleOutline, DonutLarge, CalendarToday, Assignment,
+  AccessTime, TrendingUp, MoreHoriz, WorkOutline, TaskAlt
+} from "@mui/icons-material";
+import { GalaxyButton, PremiumLoader, StatusBadge, GlassCard } from "../components/CreativeComponents";
 import { useDispatch, useSelector } from "react-redux";
 import { openSnackbar } from "../redux/snackbarSlice";
 import { userWorks, userTasks } from "../api";
 
-// --- Animations ---
+// ─── Animations ────────────────────────────────────────────────────────────────
+
 const fadeInUp = keyframes`
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(16px); }
   to { opacity: 1; transform: translateY(0); }
 `;
 
-// --- Styled Components ---
+const slideIn = keyframes`
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: translateX(0); }
+`;
+
+// ─── Layout ────────────────────────────────────────────────────────────────────
 
 const Container = styled.div`
-  padding: 30px;
-  background-color: ${({ theme }) => theme.bg};
-  height: 100%;
-  overflow-y: scroll;
-  background: 
-    radial-gradient(circle at 10% 20%, ${({ theme }) => theme.bgLighter} 0%, transparent 20%),
-    radial-gradient(circle at 90% 80%, ${({ theme }) => theme.primary + "15"} 0%, transparent 20%),
-    radial-gradient(${({ theme }) => theme.textSoft + "10"} 1px, transparent 1px);
-  background-size: 100% 100%, 100% 100%, 30px 30px;
-  background-attachment: local;
+  padding: 28px 32px;
+  background: ${({ theme }) => theme.bg};
+  min-height: 100%;
 `;
 
-const Header = styled.div`
-  margin-bottom: 40px;
-  animation: ${fadeInUp} 0.6s ease-out;
+// ─── Header ────────────────────────────────────────────────────────────────────
+
+const PageHeader = styled.div`
+  margin-bottom: 28px;
+  animation: ${fadeInUp} 0.4s ease-out;
 `;
 
-const Title = styled.h1`
-  font-size: 34px;
-  font-weight: 800;
-  background: linear-gradient(to right, ${({ theme }) => theme.text}, ${({ theme }) => theme.primary});
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+const TitleRow = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 8px;
-
-  &::before {
-    content: "💼";
-    -webkit-text-fill-color: initial;
-    font-size: 32px;
-  }
+  gap: 14px;
+  margin-bottom: 6px;
 `;
 
-const Subtitle = styled.p`
-  color: ${({ theme }) => theme.textSoft};
-  font-size: 16px;
-`;
-
-// --- Bento Stats Grid ---
-
-const BentoGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
-  margin-bottom: 40px;
-  animation: ${fadeInUp} 0.7s ease-out;
-`;
-
-const BentoCard = styled.div`
-  background: ${({ theme }) => theme.bgLighter};
-  border-radius: 24px;
-  padding: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+const TitleIcon = styled.div`
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: ${({ theme }) => theme.gradientPrimary || "linear-gradient(135deg, #7C4DFF, #9C6FFF)"};
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 160px;
-  transition: transform 0.3s;
-
-  &:hover {
-    transform: translateY(-5px);
-    border-color: ${({ theme }) => theme.primary + "50"};
-  }
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 20px;
+  box-shadow: 0 6px 16px ${({ theme }) => theme.primary + "40"};
+  flex-shrink: 0;
 `;
 
-const StatValue = styled.h2`
-  font-size: 42px;
+const PageTitle = styled.h1`
+  font-size: 28px;
   font-weight: 800;
   color: ${({ theme }) => theme.text};
   margin: 0;
+  letter-spacing: -0.5px;
+`;
+
+const PageSubtitle = styled.p`
+  font-size: 14px;
+  color: ${({ theme }) => theme.textSoft};
+  margin: 0;
+`;
+
+// ─── Stats Grid ────────────────────────────────────────────────────────────────
+
+const StatsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  margin-bottom: 32px;
+  animation: ${fadeInUp} 0.5s ease-out;
+`;
+
+const StatCard = styled.div`
+  background: ${({ theme, $accent }) => $accent ? $accent : theme.bgLighter};
+  border: 1px solid ${({ theme, $accent }) => $accent ? "transparent" : theme.border};
+  border-radius: 20px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: ${({ $topAccent }) => $topAccent || "transparent"};
+  }
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px ${({ theme }) => theme.primary + "18"};
+  }
+`;
+
+const StatIconBox = styled.div`
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: ${({ $bg }) => $bg || "rgba(124,77,255,0.15)"};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: ${({ $color }) => $color || "#7C4DFF"};
 `;
 
 const StatLabel = styled.span`
-  font-size: 14px;
-  color: ${({ theme }) => theme.textSoft};
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: ${({ $light }) => $light ? "rgba(255,255,255,0.7)" : ({ theme }) => theme?.textSoft};
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 `;
 
-// --- Works Section ---
+const StatValue = styled.div`
+  font-size: 36px;
+  font-weight: 800;
+  color: ${({ $light, theme }) => $light ? "white" : theme.text};
+  line-height: 1;
+  letter-spacing: -1px;
+`;
 
-const SectionTitle = styled.h3`
-  font-size: 20px;
-  font-weight: 700;
-  color: ${({ theme }) => theme.text};
-  margin-bottom: 20px;
+const StatProgress = styled.div`
+  height: 5px;
+  background: ${({ theme }) => theme.border};
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    height: 100%;
+    width: ${({ $value }) => $value || 0}%;
+    background: ${({ $bar }) => $bar || "linear-gradient(90deg, #7C4DFF, #9C6FFF)"};
+    border-radius: 10px;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+`;
+
+// ─── Section ───────────────────────────────────────────────────────────────────
+
+const SectionHeader = styled.div`
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-bottom: 18px;
 `;
 
-const WorksGrid = styled.div`
+const SectionTitle = styled.h2`
+  font-size: 17px;
+  font-weight: 700;
+  color: ${({ theme }) => theme.text};
+  margin: 0;
+  letter-spacing: -0.2px;
+`;
+
+const SectionBadge = styled.span`
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  background: ${({ $color }) => $color + "20" || "rgba(124,77,255,0.15)"};
+  color: ${({ $color }) => $color || "#7C4DFF"};
+  border: 1px solid ${({ $color }) => $color + "40" || "rgba(124,77,255,0.3)"};
+`;
+
+// ─── Works Grid ────────────────────────────────────────────────────────────────
+
+const WorksLayout = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 30px;
+  gap: 28px;
   margin-bottom: 40px;
 
   @media (max-width: 900px) {
@@ -126,44 +198,21 @@ const WorksGrid = styled.div`
 const WorkColumn = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 14px;
 `;
 
 const WorkCard = styled.div`
   background: ${({ theme }) => theme.bgLighter};
-  border-radius: 20px;
-  padding: 24px;
-  border: 1px solid ${({ theme }) => theme.soft + "30"};
-  position: relative;
-  overflow: hidden;
+  border: 1px solid ${({ theme }) => theme.border};
+  border-radius: 18px;
+  padding: 20px;
   transition: all 0.3s ease;
-  animation: ${fadeInUp} 0.8s ease-out;
+  animation: ${slideIn} 0.5s ease-out;
 
   &:hover {
     transform: translateY(-3px);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* Border Beam Effect */
-   &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 20px; 
-    padding: 2px;
-    background: linear-gradient(90deg, transparent, ${({ theme }) => theme.primary}, transparent);
-    -webkit-mask: 
-       linear-gradient(#fff 0 0) content-box, 
-       linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-
-  &:hover::before {
-      opacity: 0.5;
+    box-shadow: 0 12px 32px ${({ theme }) => theme.primary + "18"};
+    border-color: ${({ theme }) => theme.primary + "50"};
   }
 `;
 
@@ -171,66 +220,157 @@ const WorkHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 `;
 
 const WorkTitle = styled.h4`
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   color: ${({ theme }) => theme.text};
-  margin: 0 0 4px 0;
+  margin: 0 0 4px;
 `;
 
 const WorkDate = styled.span`
-  font-size: 12px;
+  font-size: 11px;
   color: ${({ theme }) => theme.textSoft};
   display: flex;
   align-items: center;
   gap: 4px;
 `;
 
-const MemberGroup = styled.div`
+const WorkStatusRow = styled.div`
   display: flex;
-  padding-left: 10px;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  margin-bottom: 6px;
+  color: ${({ theme }) => theme.textSoft};
+  font-weight: 500;
 `;
 
-// --- Tasks Table (Simplified) ---
+const MemberGroup = styled.div`
+  display: flex;
+  padding-left: 8px;
+`;
+
+const WorkFooter = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid ${({ theme }) => theme.border};
+`;
+
+const ChipStyled = styled.div`
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  background: ${({ $bg }) => $bg || "rgba(124,77,255,0.12)"};
+  color: ${({ $color }) => $color || "#7C4DFF"};
+  border: 1px solid ${({ $border }) => $border || "rgba(124,77,255,0.25)"};
+`;
+
+const EmptyColumn = styled.div`
+  text-align: center;
+  padding: 40px 20px;
+  color: ${({ theme }) => theme.textSoft};
+  font-size: 14px;
+
+  .icon { font-size: 36px; margin-bottom: 8px; display: block; }
+`;
+
+// ─── Tasks Table ──────────────────────────────────────────────────────────────
 
 const TaskSection = styled.div`
   background: ${({ theme }) => theme.bgLighter};
-  border-radius: 24px;
-  padding: 30px;
-  border: 1px solid ${({ theme }) => theme.soft + "30"};
+  border: 1px solid ${({ theme }) => theme.border};
+  border-radius: 20px;
+  overflow: hidden;
+  animation: ${fadeInUp} 0.7s ease-out;
 `;
 
-const TaskRow = styled.div`
+const TableHeader = styled.div`
   display: grid;
-  grid-template-columns: 50px 3fr 1fr 1fr 1fr;
+  grid-template-columns: 44px 1fr 120px 120px 100px;
   align-items: center;
-  padding: 16px 0;
-  border-bottom: 1px solid ${({ theme }) => theme.soft + "30"};
-  color: ${({ theme }) => theme.text};
-  font-size: 14px;
-
-  &:last-child {
-    border-bottom: none;
-  }
-  
-  @media (max-width: 768px) {
-      grid-template-columns: 3fr 1fr;
-      gap: 10px;
-      /* Hide other columns on mobile for now */
-      & > *:nth-child(1), & > *:nth-child(3), & > *:nth-child(4) {
-          display: none;
-      }
-  }
-`;
-
-const TaskHeader = styled(TaskRow)`
+  padding: 14px 24px;
+  background: ${({ theme }) => theme.bg};
+  border-bottom: 1px solid ${({ theme }) => theme.border};
+  font-size: 11px;
   font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
   color: ${({ theme }) => theme.textSoft};
-  border-bottom: 2px solid ${({ theme }) => theme.soft + "30"};
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr 100px;
+    > *:not(:nth-child(2)):not(:last-child) { display: none; }
+  }
 `;
+
+const TableRow = styled.div`
+  display: grid;
+  grid-template-columns: 44px 1fr 120px 120px 100px;
+  align-items: center;
+  padding: 14px 24px;
+  border-bottom: 1px solid ${({ theme }) => theme.border};
+  font-size: 13px;
+  color: ${({ theme }) => theme.text};
+  transition: background 0.15s;
+
+  &:last-child { border-bottom: none; }
+
+  &:hover { background: ${({ theme }) => theme.itemHover}; }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr 100px;
+    > *:not(:nth-child(2)):not(:last-child) { display: none; }
+  }
+`;
+
+const RowIndex = styled.span`
+  font-size: 12px;
+  font-weight: 700;
+  color: ${({ theme }) => theme.textMuted || theme.textSoft};
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: ${({ theme }) => theme.soft};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const TaskName = styled.span`
+  font-weight: 600;
+  font-size: 14px;
+  color: ${({ theme }) => theme.text};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-right: 8px;
+`;
+
+const DateCell = styled.span`
+  font-size: 12px;
+  color: ${({ theme }) => theme.textSoft};
+`;
+
+const OverdueDate = styled(DateCell)`
+  color: ${({ theme }) => theme.red || "#FF5252"};
+  font-weight: 600;
+`;
+
+const EmptyRow = styled.div`
+  text-align: center;
+  padding: 48px;
+  color: ${({ theme }) => theme.textSoft};
+  font-size: 14px;
+`;
+
+// ─── Component ─────────────────────────────────────────────────────────────────
 
 const WorksNew = () => {
   const theme = useTheme();
@@ -245,169 +385,277 @@ const WorksNew = () => {
       setLoading(true);
       try {
         const token = localStorage.getItem("token");
-        const worksRes = await userWorks(token);
-        const tasksRes = await userTasks(token);
-
+        const [worksRes, tasksRes] = await Promise.all([
+          userWorks(token),
+          userTasks(token)
+        ]);
         setWorks(worksRes.data);
         setTasks(tasksRes.data);
         setLoading(false);
       } catch (err) {
-        dispatch(openSnackbar({ message: err.response?.data?.message || err.message || "Failed to fetch data", type: "error" }));
+        dispatch(openSnackbar({
+          message: err.response?.data?.message || err.message || "Failed to fetch data",
+          type: "error"
+        }));
         setLoading(false);
       }
     };
 
-    if (currentUser) {
-      fetchData();
-    }
+    if (currentUser) fetchData();
   }, [currentUser, dispatch]);
 
   const completedWorks = works.filter(w => w.status === "Completed");
   const pendingWorks = works.filter(w => w.status === "Working" || w.status === "In Progress");
-  const pendingTasksCount = tasks.filter(t => t.status !== "Completed").length;
+  const pendingTasksCount = tasks.filter(t => t.status !== "Completed" && t.status !== "Done").length;
+  const completionRate = works.length > 0 ? Math.round((completedWorks.length / works.length) * 100) : 0;
+
+  const isOverdue = (dateStr) => {
+    if (!dateStr) return false;
+    return new Date(dateStr) < new Date();
+  };
 
   return (
     <Container>
-      <Header>
-        <Title>My Works</Title>
-        <Subtitle>Manage your ongoing projects and personal tasks.</Subtitle>
-      </Header>
+      {/* Header */}
+      <PageHeader>
+        <TitleRow>
+          <TitleIcon>
+            <WorkOutline />
+          </TitleIcon>
+          <PageTitle>My Works</PageTitle>
+        </TitleRow>
+        <PageSubtitle>Track your ongoing works, tasks, and personal contributions</PageSubtitle>
+      </PageHeader>
 
       {loading ? (
-        <div style={{ display: "flex", justifyContent: "center", width: "100%", padding: "40px" }}>
+        <div style={{ display: "flex", justifyContent: "center", padding: "80px" }}>
           <PremiumLoader />
         </div>
       ) : (
         <>
-          <BentoGrid>
-            <BentoCard>
-              <div>
-                <StatLabel><DonutLarge sx={{ fontSize: 16 }} /> Total Works</StatLabel>
-                <StatValue>{works.length}</StatValue>
+          {/* Stats */}
+          <StatsGrid>
+            <StatCard $topAccent="linear-gradient(90deg, #7C4DFF, #9C6FFF)">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <StatLabel>Total Works</StatLabel>
+                  <StatValue style={{ marginTop: 8 }}>{works.length}</StatValue>
+                </div>
+                <StatIconBox $bg="rgba(124,77,255,0.12)" $color={theme.primary}>
+                  <DonutLarge />
+                </StatIconBox>
               </div>
-              <LinearProgress variant="determinate" value={works.length > 0 ? (completedWorks.length / works.length) * 100 : 0} sx={{ borderRadius: 5, height: 6, backgroundColor: theme.soft }} />
-            </BentoCard>
-            <BentoCard>
-              <div>
-                <StatLabel><Assignment sx={{ fontSize: 16 }} /> Pending Tasks</StatLabel>
-                <StatValue>{pendingTasksCount}</StatValue>
-              </div>
-              <div style={{ fontSize: '12px', color: theme.textSoft }}>Keep it up!</div>
-            </BentoCard>
-            <BentoCard style={{ background: `linear-gradient(135deg, ${theme.primary} 0%, #6A38C2 100%)` }}>
-              <div>
-                <StatLabel style={{ color: 'rgba(255,255,255,0.8)' }}><CheckCircleOutline sx={{ fontSize: 16 }} /> Completed</StatLabel>
-                <StatValue style={{ color: 'white' }}>{completedWorks.length}</StatValue>
-              </div>
-              <GalaxyButton style={{ background: 'rgba(255,255,255,0.2)', width: 'fit-content', padding: '6px 16px', fontSize: '12px' }}>
-                View Archive <ArrowForward sx={{ fontSize: 14 }} />
-              </GalaxyButton>
-            </BentoCard>
-          </BentoGrid>
+              <StatProgress
+                $value={completionRate}
+                $bar="linear-gradient(90deg, #7C4DFF, #9C6FFF)"
+              />
+              <span style={{ fontSize: 11, color: theme.textSoft, fontWeight: 500 }}>
+                {completionRate}% completion rate
+              </span>
+            </StatCard>
 
-          <WorksGrid>
+            <StatCard $topAccent="linear-gradient(90deg, #FF8A65, #FFD93D)">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <StatLabel>Pending Tasks</StatLabel>
+                  <StatValue style={{ marginTop: 8 }}>{pendingTasksCount}</StatValue>
+                </div>
+                <StatIconBox $bg="rgba(255,138,101,0.12)" $color="#FF8A65">
+                  <Assignment />
+                </StatIconBox>
+              </div>
+              <span style={{ fontSize: 12, color: theme.textSoft }}>
+                {pendingTasksCount === 0 ? "🎉 All caught up!" : "Stay on track!"}
+              </span>
+            </StatCard>
+
+            <StatCard
+              $accent="linear-gradient(135deg, #7C4DFF 0%, #5C3DBF 100%)"
+              style={{ color: 'white' }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <StatLabel $light>Completed</StatLabel>
+                  <StatValue $light style={{ marginTop: 8 }}>{completedWorks.length}</StatValue>
+                </div>
+                <div style={{
+                  width: 44, height: 44, borderRadius: 12,
+                  background: "rgba(255,255,255,0.2)",
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white'
+                }}>
+                  <CheckCircleOutline />
+                </div>
+              </div>
+              <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>
+                {completedWorks.length === 0 ? "Complete your first!" : "Great progress! 🚀"}
+              </span>
+            </StatCard>
+          </StatsGrid>
+
+          {/* Works (In Progress vs Completed) */}
+          <WorksLayout>
             <WorkColumn>
-              <SectionTitle><DonutLarge sx={{ color: '#3b82f6' }} /> In Progress</SectionTitle>
+              <SectionHeader>
+                <DonutLarge style={{ color: '#00D4FF', fontSize: 20 }} />
+                <SectionTitle>In Progress</SectionTitle>
+                <SectionBadge $color="#00D4FF">{pendingWorks.length}</SectionBadge>
+              </SectionHeader>
+
               {pendingWorks.length === 0 ? (
-                <div style={{ color: theme.textSoft, padding: '20px' }}>No works in progress.</div>
+                <EmptyColumn>
+                  <span className="icon">✨</span>
+                  No active works
+                </EmptyColumn>
               ) : (
                 pendingWorks.map((work) => (
                   <WorkCard key={work._id}>
                     <WorkHeader>
                       <div>
                         <WorkTitle>{work.title}</WorkTitle>
-                        <WorkDate><CalendarToday sx={{ fontSize: 12 }} /> {new Date(work.createdAt).toLocaleDateString()}</WorkDate>
+                        <WorkDate>
+                          <CalendarToday style={{ fontSize: 11 }} />
+                          {new Date(work.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </WorkDate>
                       </div>
-                      <IconButton size="small"><MoreHoriz /></IconButton>
+                      <ChipStyled $bg="rgba(0,212,255,0.1)" $color="#00D4FF" $border="rgba(0,212,255,0.25)">
+                        Active
+                      </ChipStyled>
                     </WorkHeader>
-                    <div style={{ marginBottom: '16px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px', color: theme.textSoft }}>
-                        <span>Status</span>
-                        <span>Working</span>
-                      </div>
-                      <LinearProgress variant="determinate" value={60} sx={{ borderRadius: 4, height: 6, backgroundColor: theme.soft, '& .MuiLinearProgress-bar': { backgroundColor: '#3b82f6' } }} />
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+
+                    <WorkStatusRow>
+                      <span>Progress</span>
+                      <span style={{ color: '#00D4FF', fontWeight: 700 }}>60%</span>
+                    </WorkStatusRow>
+                    <LinearProgress
+                      variant="determinate"
+                      value={60}
+                      sx={{
+                        borderRadius: 4, height: 5,
+                        backgroundColor: theme.soft,
+                        '& .MuiLinearProgress-bar': { backgroundColor: '#00D4FF', borderRadius: 4 }
+                      }}
+                    />
+
+                    <WorkFooter>
                       <MemberGroup>
-                        {work.members?.slice(0, 3).map((m) => (
-                          <Avatar key={m._id} src={m.img} sx={{ width: 28, height: 28, marginLeft: '-8px', border: `2px solid ${theme.bgLighter}` }}>
-                            {m.name[0]}
+                        {work.members?.slice(0, 3).map((m, i) => (
+                          <Avatar
+                            key={m._id || i}
+                            src={m.img}
+                            sx={{ width: 26, height: 26, marginLeft: '-8px', border: `2px solid ${theme.bgLighter}`, fontSize: 11 }}
+                          >
+                            {m.name?.[0]}
                           </Avatar>
                         ))}
                       </MemberGroup>
-                      <Chip label="On Track" size="small" sx={{ height: 24, fontSize: 11, backgroundColor: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }} />
-                    </div>
+                      <ChipStyled $bg="rgba(0,212,255,0.08)" $color="#00D4FF" $border="rgba(0,212,255,0.2)">
+                        On Track
+                      </ChipStyled>
+                    </WorkFooter>
                   </WorkCard>
                 ))
               )}
             </WorkColumn>
 
             <WorkColumn>
-              <SectionTitle><CheckCircleOutline sx={{ color: '#10b981' }} /> Completed</SectionTitle>
+              <SectionHeader>
+                <CheckCircleOutline style={{ color: '#00E5A0', fontSize: 20 }} />
+                <SectionTitle>Completed</SectionTitle>
+                <SectionBadge $color="#00E5A0">{completedWorks.length}</SectionBadge>
+              </SectionHeader>
+
               {completedWorks.length === 0 ? (
-                <div style={{ color: theme.textSoft, padding: '20px' }}>No completed works yet.</div>
+                <EmptyColumn>
+                  <span className="icon">🏁</span>
+                  No completed works yet
+                </EmptyColumn>
               ) : (
                 completedWorks.map((work) => (
-                  <WorkCard key={work._id} style={{ opacity: 0.8 }}>
+                  <WorkCard key={work._id} style={{ opacity: 0.85 }}>
                     <WorkHeader>
                       <div>
                         <WorkTitle>{work.title}</WorkTitle>
-                        <WorkDate><CalendarToday sx={{ fontSize: 12 }} /> {new Date(work.updatedAt).toLocaleDateString()}</WorkDate>
+                        <WorkDate>
+                          <CalendarToday style={{ fontSize: 11 }} />
+                          {new Date(work.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </WorkDate>
                       </div>
-                      <IconButton size="small"><MoreHoriz /></IconButton>
+                      <ChipStyled $bg="rgba(0,229,160,0.1)" $color="#00E5A0" $border="rgba(0,229,160,0.25)">
+                        Done
+                      </ChipStyled>
                     </WorkHeader>
-                    <div style={{ marginBottom: '16px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px', color: theme.textSoft }}>
-                        <span>Completed</span>
-                        <span>100%</span>
-                      </div>
-                      <LinearProgress variant="determinate" value={100} sx={{ borderRadius: 4, height: 6, backgroundColor: theme.soft, '& .MuiLinearProgress-bar': { backgroundColor: '#10b981' } }} />
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+
+                    <WorkStatusRow>
+                      <span>Completed</span>
+                      <span style={{ color: '#00E5A0', fontWeight: 700 }}>100%</span>
+                    </WorkStatusRow>
+                    <LinearProgress
+                      variant="determinate"
+                      value={100}
+                      sx={{
+                        borderRadius: 4, height: 5,
+                        backgroundColor: theme.soft,
+                        '& .MuiLinearProgress-bar': { backgroundColor: '#00E5A0', borderRadius: 4 }
+                      }}
+                    />
+
+                    <WorkFooter>
                       <MemberGroup>
-                        {work.members?.slice(0, 3).map((m) => (
-                          <Avatar key={m._id} src={m.img} sx={{ width: 28, height: 28, marginLeft: '-8px', border: `2px solid ${theme.bgLighter}` }}>
-                            {m.name[0]}
+                        {work.members?.slice(0, 3).map((m, i) => (
+                          <Avatar
+                            key={m._id || i}
+                            src={m.img}
+                            sx={{ width: 26, height: 26, marginLeft: '-8px', border: `2px solid ${theme.bgLighter}`, fontSize: 11 }}
+                          >
+                            {m.name?.[0]}
                           </Avatar>
                         ))}
                       </MemberGroup>
-                      <Chip label="Done" size="small" sx={{ height: 24, fontSize: 11, backgroundColor: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }} />
-                    </div>
+                      <TaskAlt style={{ color: '#00E5A0', fontSize: 18 }} />
+                    </WorkFooter>
                   </WorkCard>
                 ))
               )}
             </WorkColumn>
-          </WorksGrid>
+          </WorksLayout>
 
-          <SectionTitle>Your Tasks</SectionTitle>
+          {/* Tasks Table */}
+          <SectionHeader style={{ marginBottom: 16 }}>
+            <Assignment style={{ color: theme.primary, fontSize: 20 }} />
+            <SectionTitle>Your Tasks</SectionTitle>
+            <SectionBadge $color={theme.primary}>{tasks.length}</SectionBadge>
+          </SectionHeader>
+
           <TaskSection>
-            <TaskHeader>
-              <span>No</span>
+            <TableHeader>
+              <span>#</span>
               <span>Task Name</span>
               <span>Start Date</span>
               <span>Deadline</span>
               <span>Status</span>
-            </TaskHeader>
+            </TableHeader>
+
             {tasks.length === 0 ? (
-              <div style={{ padding: '20px', textAlign: 'center', color: theme.textSoft }}>No tasks found.</div>
+              <EmptyRow>No tasks assigned to you yet.</EmptyRow>
             ) : (
               tasks.map((task, index) => (
-                <TaskRow key={task._id}>
-                  <span>{index + 1}</span>
-                  <span style={{ fontWeight: 600 }}>{task.task}</span>
-                  <span>{new Date(task.createdAt).toLocaleDateString()}</span>
-                  <span style={{ color: '#ef4444' }}>{new Date(task.end_date).toLocaleDateString()}</span>
-                  <Chip
-                    label={task.status}
-                    size="small"
-                    sx={{
-                      width: 'fit-content',
-                      fontSize: 11,
-                      backgroundColor: task.status === 'Completed' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                      color: task.status === 'Completed' ? '#10b981' : '#ef4444'
-                    }}
-                  />
-                </TaskRow>
+                <TableRow key={task._id}>
+                  <RowIndex>{index + 1}</RowIndex>
+                  <TaskName>{task.task}</TaskName>
+                  <DateCell>
+                    {task.createdAt ? new Date(task.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—'}
+                  </DateCell>
+                  {isOverdue(task.end_date) && (task.status !== 'Completed' && task.status !== 'Done') ? (
+                    <OverdueDate>
+                      {task.end_date ? new Date(task.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—'}
+                    </OverdueDate>
+                  ) : (
+                    <DateCell>
+                      {task.end_date ? new Date(task.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—'}
+                    </DateCell>
+                  )}
+                  <StatusBadge status={task.status}>{task.status}</StatusBadge>
+                </TableRow>
               ))
             )}
           </TaskSection>

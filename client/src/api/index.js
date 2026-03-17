@@ -33,7 +33,7 @@ export const googleSignIn = async ({
     img,
 }, { withCredentials: true });
 export const findUserByEmail = async (email) => await API.get(`/auth/findbyemail?email=${email}`);
-export const generateOtp = async (email, name, reason) => await API.get(`/auth/generateotp?email=${email}&name=${name}&reason=${reason}`);
+export const generateOtp = async (email, name, reason) => await API.get(`/auth/generateotp?email=${email}&name=${name}&reason=${reason}&_=${Date.now()}`);
 export const verifyOtp = async (otp) => await API.get(`/auth/verifyotp?code=${otp}`);
 export const resetPassword = async (email, password) => await API.put(`/auth/forgetpassword`, { email, password });
 
@@ -49,6 +49,7 @@ export const getPosts = async (token) => await API.get("/community", { headers: 
 export const createPost = async (data, token) => await API.post("/community", data, { headers: { "Authorization": `Bearer ${token}` } }, { withCredentials: true });
 export const likePost = async (id, token) => await API.put(`/community/like/${id}`, {}, { headers: { "Authorization": `Bearer ${token}` } }, { withCredentials: true });
 export const deletePost = async (id, token) => await API.delete(`/community/${id}`, { headers: { "Authorization": `Bearer ${token}` } }, { withCredentials: true });
+export const updatePost = async (id, data, token) => await API.put(`/community/${id}`, data, { headers: { "Authorization": `Bearer ${token}` } }, { withCredentials: true });
 export const searchUsers = async (search, token) => await API.get(`users/search/${encodeURIComponent(search)}`, { headers: { "Authorization": `Bearer ${token}` } }, { withCredentials: true });
 export const notifications = async (token) => await API.get('/users/notifications', { headers: { "Authorization": `Bearer ${token}` } }, { withCredentials: true });
 export const clearNotifications = async (token) => await API.delete('/users/notifications', { headers: { "Authorization": `Bearer ${token}` } }, { withCredentials: true });

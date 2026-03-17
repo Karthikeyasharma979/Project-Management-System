@@ -274,7 +274,7 @@ export const generateOTP = async (req, res, next) => {
     }
 
     // Always succeed
-    return res.status(200).send({ message: "OTP sent", code: req.app.locals.OTP });
+    return res.status(200).send({ message: "OTP sent" });
 }
 
 export const verifyOTP = async (req, res, next) => {

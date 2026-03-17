@@ -30,7 +30,6 @@ import {
 import { openSnackbar } from "../redux/snackbarSlice";
 import { useDispatch } from "react-redux";
 import { updateUser } from "../redux/userSlice";
-import ImageSelector from "./ImageSelector";
 
 const Container = styled.div`
   width: 100%;
@@ -686,8 +685,6 @@ const AddNewProject = ({ setNewProject, teamId, teamProject }) => {
               ) : (
                 <>
                   <Label>Project Details :</Label>
-
-                  <ImageSelector inputs={inputs} setInputs={setInputs} style={{ marginTop: "12px" }} />
                   <OutlinedBox style={{ marginTop: "12px" }}>
                     <TextInput
                       placeholder="Title (Required)*"

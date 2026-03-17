@@ -164,11 +164,12 @@ const OTP = ({ email, name, otpVerified, setOtpVerified, reason }) => {
     }
 
     const sendOtp = async () => {
+        setOtpSent(false);
         await generateOtp(email, name, reason).then((res) => {
             if (res.status === 200) {
                 dispatch(
                     openSnackbar({
-                        message: res.data.code ? `OTP sent: ${res.data.code}` : "OTP sent Successfully",
+                        message: "OTP sent Successfully",
                         severity: "success",
                     })
                 );
@@ -177,7 +178,6 @@ const OTP = ({ email, name, otpVerified, setOtpVerified, reason }) => {
                 setOtpError('');
                 setOtpLoading(false);
                 setOtpSent(true);
-                console.log(res.data);
             } else {
                 dispatch(
                     openSnackbar({
